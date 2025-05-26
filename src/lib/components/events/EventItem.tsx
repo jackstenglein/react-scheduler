@@ -112,8 +112,12 @@ const EventItem = ({ event, multiday, hasPrev, hasNext, showdate = true }: Event
         key={`${event.start.getTime()}_${event.end.getTime()}_${event.event_id}`}
         disabled={event.disabled}
         sx={{
-          bgcolor: event.disabled ? "#d0d0d0" : event.color || theme.palette.primary.main,
-          color: event.disabled ? "#808080" : event.textColor || theme.palette.primary.contrastText,
+          bgcolor: event.disabled
+            ? "#d0d0d0"
+            : event.color || (theme.vars || theme).palette.primary.main,
+          color: event.disabled
+            ? "#808080"
+            : event.textColor || (theme.vars || theme).palette.primary.contrastText,
           ...(event.sx || {}),
         }}
       >
@@ -147,8 +151,8 @@ const EventItem = ({ event, multiday, hasPrev, hasNext, showdate = true }: Event
     showdate,
     hFormat,
     locale,
-    theme.palette.primary.main,
-    theme.palette.primary.contrastText,
+    (theme.vars || theme).palette.primary.main,
+    (theme.vars || theme).palette.primary.contrastText,
     disableViewer,
     dragProps,
     canDrag,

@@ -21,7 +21,7 @@ const WithResources = ({ renderChildren }: WithResourcesProps) => {
           <Box key={`${res[resourceFields.idField]}_${i}`} sx={{ display: "flex" }}>
             <Box
               sx={{
-                borderColor: theme.palette.grey[300],
+                borderColor: (theme.vars || theme).palette.grey[300],
                 borderStyle: "solid",
                 borderWidth: "1px 1px 0 1px",
                 paddingTop: 1,

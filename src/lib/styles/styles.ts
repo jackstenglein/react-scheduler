@@ -1,4 +1,5 @@
-import { Paper, alpha, styled } from "@mui/material";
+import { Paper, alpha } from "@mui/material";
+import { styled } from "@mui/material/styles";
 
 export const Wrapper = styled("div")<{ dialog: number }>(({ theme, dialog }) => ({
   position: "relative",
@@ -55,7 +56,7 @@ export const NavigationDiv = styled(Paper)<{ sticky?: string }>(({ sticky = "0" 
 
 export const AgendaDiv = styled("div")(({ theme }) => ({
   borderStyle: "solid",
-  borderColor: theme.palette.grey[300],
+  borderColor: (theme.vars || theme).palette.grey[300],
   borderWidth: "1px 1px 0 0",
   "& > .rs__agenda_row": {
     display: "flex",
@@ -77,7 +78,7 @@ export const AgendaDiv = styled("div")(({ theme }) => ({
     },
     "& .rs__cell": {
       borderStyle: "solid",
-      borderColor: theme.palette.grey[300],
+      borderColor: (theme.vars || theme).palette.grey[300],
       borderWidth: "0 0 1px 1px",
     },
     "& > .rs__agenda_items": {
@@ -103,7 +104,7 @@ export const TableGrid = styled("div")<{
     gridTemplateColumns: +indent > 0 ? `30px repeat(${days}, 1fr)` : "",
   },
   borderStyle: "solid",
-  borderColor: theme.palette.grey[300],
+  borderColor: (theme.vars || theme).palette.grey[300],
   borderWidth: "0 0 0 1px",
   "&:first-of-type": {
     borderWidth: "1px 0 0 1px",
@@ -112,10 +113,10 @@ export const TableGrid = styled("div")<{
     borderWidth: "0 0 1px 1px",
   },
   "& .rs__cell": {
-    background: theme.palette.background.paper,
+    background: (theme.vars || theme).palette.background.paper,
     position: "relative",
     borderStyle: "solid",
-    borderColor: theme.palette.grey[300],
+    borderColor: (theme.vars || theme).palette.grey[300],
     borderWidth: "0 1px 1px 0",
     "&.rs__header": {
       "& > :first-of-type": {
@@ -199,7 +200,7 @@ export const PopperInner = styled("div")(({ theme }) => ({
       alignItems: "center",
       justifyContent: "space-between",
       "& .MuiIconButton-root": {
-        color: theme.palette.primary.contrastText,
+        color: (theme.vars || theme).palette.primary.contrastText,
       },
     },
   },
@@ -208,14 +209,14 @@ export const PopperInner = styled("div")(({ theme }) => ({
 export const EventActions = styled("div")(({ theme }) => ({
   display: "inherit",
   "& .MuiIconButton-root": {
-    color: theme.palette.primary.contrastText,
+    color: (theme.vars || theme).palette.primary.contrastText,
   },
   "& .MuiButton-root": {
     "&.delete": {
-      color: theme.palette.error.main,
+      color: (theme.vars || theme).palette.error.main,
     },
     "&.cancel": {
-      color: theme.palette.action.disabled,
+      color: (theme.vars || theme).palette.action.disabled,
     },
   },
 }));
@@ -229,12 +230,12 @@ export const TimeIndicatorBar = styled("div")(({ theme }) => ({
     height: 12,
     width: 12,
     borderRadius: "50%",
-    background: theme.palette.error.light,
+    background: (theme.vars || theme).palette.error.light,
     marginLeft: -6,
     marginTop: -5,
   },
   "& > div:last-of-type": {
-    borderTop: `solid 2px ${theme.palette.error.light}`,
+    borderTop: `solid 2px ${(theme.vars || theme).palette.error.light}`,
     width: "100%",
   },
 }));

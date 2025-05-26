@@ -40,7 +40,7 @@ const ResourceHeader = ({ resource }: ResourceHeaderProps) => {
                 top: 4,
               }
             : {
-                borderColor: theme.palette.grey[300],
+                borderColor: (theme.vars || theme).palette.grey[300],
                 borderStyle: "solid",
                 borderWidth: 1,
               }),

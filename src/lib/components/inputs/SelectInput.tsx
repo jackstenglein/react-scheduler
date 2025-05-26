@@ -154,7 +154,7 @@ const EditorSelect = ({
           ))}
         </Select>
       </FormControl>
-      <FormHelperText style={{ color: theme.palette.error.main }}>
+      <FormHelperText style={{ color: (theme.vars || theme).palette.error.main }}>
         {state.touched && !state.valid && state.errorMsg}
       </FormHelperText>
     </>

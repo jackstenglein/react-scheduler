@@ -11,11 +11,12 @@ const useDragAttributes = (event: ProcessedEvent) => {
     onDragStart: (e: DragEvent<HTMLElement>) => {
       e.stopPropagation();
       setCurrentDragged(event);
-      e.currentTarget.style.backgroundColor = theme.palette.error.main;
+      e.currentTarget.style.backgroundColor = (theme.vars || theme).palette.error.main;
     },
     onDragEnd: (e: DragEvent<HTMLElement>) => {
       setCurrentDragged();
-      e.currentTarget.style.backgroundColor = event.color || theme.palette.primary.main;
+      e.currentTarget.style.backgroundColor =
+        event.color || (theme.vars || theme).palette.primary.main;
     },
     onDragOver: (e: DragEvent<HTMLElement>) => {
       e.stopPropagation();

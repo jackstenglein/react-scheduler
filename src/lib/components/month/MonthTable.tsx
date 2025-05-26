@@ -102,8 +102,10 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
                       height: 27,
                       position: "absolute",
                       top: 0,
-                      background: isToday ? theme.palette.secondary.main : "transparent",
-                      color: isToday ? theme.palette.secondary.contrastText : "",
+                      background: isToday
+                        ? (theme.vars || theme).palette.secondary.main
+                        : "transparent",
+                      color: isToday ? (theme.vars || theme).palette.secondary.contrastText : "",
                       marginBottom: 2,
                     }}
                   >
@@ -164,8 +166,8 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
       resourceFields,
       selectedDate,
       startHour,
-      theme.palette.secondary.contrastText,
-      theme.palette.secondary.main,
+      (theme.vars || theme).palette.secondary.contrastText,
+      (theme.vars || theme).palette.secondary.main,
       timeZone,
       weekDays,
     ]

@@ -1,7 +1,6 @@
 import { CSSProperties } from "react";
 import { Tabs, Tab } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { Theme } from "@mui/system";
 
 interface TabPanelProps {
   value: string | number;
@@ -20,44 +19,44 @@ function a11yProps(index: string | number) {
   };
 }
 
-const StyledTaps = styled("div")(({ theme }: { theme: Theme }) => ({
+const StyledTaps = styled("div")(({ theme }) => ({
   flexGrow: 1,
   width: "100%",
-  backgroundColor: theme.palette.background.paper,
+  backgroundColor: (theme.vars || theme).palette.background.paper,
   alignSelf: "center",
   "& .tabs": {
-    borderColor: theme.palette.grey[300],
+    borderColor: (theme.vars || theme).palette.grey[300],
     borderStyle: "solid",
     borderWidth: 1,
     "& button.MuiTab-root": {
-      borderColor: theme.palette.grey[300],
+      borderColor: (theme.vars || theme).palette.grey[300],
       borderRightStyle: "solid",
       borderWidth: 1,
     },
   },
   "& .primary": {
-    background: theme.palette.primary.main,
+    background: (theme.vars || theme).palette.primary.main,
   },
   "& .secondary": {
-    background: theme.palette.secondary.main,
+    background: (theme.vars || theme).palette.secondary.main,
   },
   "& .error": {
-    background: theme.palette.error.main,
+    background: (theme.vars || theme).palette.error.main,
   },
   "& .info": {
-    background: theme.palette.info.dark,
+    background: (theme.vars || theme).palette.info.dark,
   },
   "& .text_primary": {
-    color: theme.palette.primary.main,
+    color: (theme.vars || theme).palette.primary.main,
   },
   "& .text_secondary": {
-    color: theme.palette.secondary.main,
+    color: (theme.vars || theme).palette.secondary.main,
   },
   "& .text_error": {
-    color: theme.palette.error.main,
+    color: (theme.vars || theme).palette.error.main,
   },
   "& .text_info": {
-    color: theme.palette.info.dark,
+    color: (theme.vars || theme).palette.info.dark,
   },
 }));
 
