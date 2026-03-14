@@ -1,9 +1,9 @@
 import { DragEvent, useEffect, useState } from "react";
-import { EventActions, ProcessedEvent, SchedulerProps } from "../types";
+import { EventActions, ProcessedEvent, RecurringEditMode, SchedulerProps } from "../types";
 import { defaultProps, initialStore } from "./default";
 import { StoreContext } from "./context";
 import { SchedulerState, SelectedRange, Store } from "./types";
-import { arraytizeFieldVal, getAvailableViews } from "../helpers/generals";
+import { applyRecurringEdit, arraytizeFieldVal, getAvailableViews } from "../helpers/generals";
 import { addMinutes, differenceInMinutes, isEqual } from "date-fns";
 import { View } from "../components/nav/Navigation";
 
@@ -90,7 +90,11 @@ export const StoreProvider = ({ children, initial }: Props) => {
     }
   };
 
-  const confirmEvent = (event: ProcessedEvent | ProcessedEvent[], action: EventActions) => {
+  const confirmEvent = (
+    event: ProcessedEvent | ProcessedEvent[],
+    action: EventActions,
+    recurringMode?: RecurringEditMode
+  ) => {
     let updatedEvents: ProcessedEvent[];
     if (action === "edit") {
       if (Array.isArray(event)) {
@@ -98,6 +102,9 @@ export const StoreProvider = ({ children, initial }: Props) => {
           const exist = event.find((ex) => ex.event_id === e.event_id);
           return exist ? { ...e, ...exist } : e;
         });
+      } else if (recurringMode && event._recurringMeta) {
+        // Delegate to the scope-aware helper which handles "this" / "following" / "all"
+        updatedEvents = applyRecurringEdit(state.events, event, recurringMode);
       } else {
         updatedEvents = state.events.map((e) =>
           e.event_id === event.event_id ? { ...e, ...event } : e

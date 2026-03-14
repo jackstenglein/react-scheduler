@@ -22,6 +22,7 @@ import {
   FieldProps,
   InputTypes,
   ProcessedEvent,
+  RecurringEditMode,
   SchedulerHelpers,
 } from "../types";
 
@@ -137,6 +138,10 @@ const Editor = () => {
           : body.end;
       // Specify action
       const action: EventActions = selectedEvent?.event_id ? "edit" : "create";
+
+      // Grab the recurring scope that EventItemPopover injected (if any)
+      const recurringMode = selectedEvent?._pendingRecurringMode as RecurringEditMode | undefined;
+
       // Trigger custom/remote when provided
       if (onConfirm) {
         body = await onConfirm(body, action);
@@ -149,7 +154,17 @@ const Editor = () => {
       body.start = revertTimeZonedDate(body.start, timeZone);
       body.end = revertTimeZonedDate(body.end, timeZone);
 
-      confirmEvent(body, action);
+      if (action === "edit" && recurringMode && selectedEvent?._recurringMeta) {
+        // Apply scoped recurring edit directly on the events array
+        const updatedBody = {
+          ...body,
+          _recurringMeta: selectedEvent._recurringMeta,
+        };
+        confirmEvent(updatedBody, action, recurringMode);
+      } else {
+        confirmEvent(body, action);
+      }
+
       handleClose(true);
     } catch (error) {
       console.error(error);

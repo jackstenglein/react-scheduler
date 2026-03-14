@@ -12,15 +12,190 @@ import {
   startOfDay,
   subMinutes,
 } from "date-fns";
+import { RRule, RRuleSet } from "rrule";
 import { View } from "../components/nav/Navigation";
 import {
   DefaultResource,
   FieldProps,
   ProcessedEvent,
+  RecurringEditMode,
   ResourceFields,
   SchedulerProps,
 } from "../types";
 import { StateEvent } from "../views/Editor";
+
+// ─── RRuleSet helpers ────────────────────────────────────────────────────────
+
+/** Wraps an RRule in an RRuleSet if it isn't one already. */
+const toRRuleSet = (rule: RRule | RRuleSet): RRuleSet => {
+  if (rule instanceof RRuleSet) return rule;
+  const set = new RRuleSet();
+  set.rrule(rule);
+  return set;
+};
+
+/** Deep-clones an RRuleSet preserving all rrules and exdates. */
+const cloneRRuleSet = (source: RRuleSet): RRuleSet => {
+  const clone = new RRuleSet();
+  (((source as any)._rrule as RRule[]) || []).forEach((r) => clone.rrule(r));
+  (((source as any)._exdate as Date[]) || []).forEach((d) => clone.exdate(d));
+  return clone;
+};
+
+/**
+ * Returns a copy of the event whose recurrence rule has an EXDATE added for
+ * the given occurrence start so that occurrence is skipped in future expansions.
+ */
+export const addExdateToEvent = (event: ProcessedEvent, occurrenceDate: Date): ProcessedEvent => {
+  const set = cloneRRuleSet(toRRuleSet(event.recurring as RRule | RRuleSet));
+  set.exdate(occurrenceDate);
+  return { ...event, recurring: set };
+};
+
+/**
+ * Returns a copy of the event whose recurrence rule ends strictly before
+ * `cutoffDate` (used for "this and following" truncation).
+ */
+export const truncateEventBefore = (event: ProcessedEvent, cutoffDate: Date): ProcessedEvent => {
+  const source = toRRuleSet(event.recurring as RRule | RRuleSet);
+  const truncated = new RRuleSet();
+  (((source as any)._rrule as RRule[]) || []).forEach((r) => {
+    const opts = { ...r.origOptions };
+    opts.until = new Date(cutoffDate.getTime() - 1000);
+    delete opts.count;
+    truncated.rrule(new RRule(opts));
+  });
+  (((source as any)._exdate as Date[]) || []).forEach((d) => truncated.exdate(d));
+  return { ...event, recurring: truncated };
+};
+
+/**
+ * Builds a new series event starting from `fromDate`, inheriting the parent's
+ * recurrence frequency but with a fresh dtstart and any field overrides applied.
+ */
+export const createSeriesFrom = (
+  parent: ProcessedEvent,
+  fromDate: Date,
+  overrides: Partial<ProcessedEvent>
+): ProcessedEvent => {
+  const source = toRRuleSet(parent.recurring as RRule | RRuleSet);
+  const newSet = new RRuleSet();
+  (((source as any)._rrule as RRule[]) || []).forEach((r) => {
+    const opts = { ...r.origOptions, dtstart: fromDate };
+    delete opts.count;
+    delete opts.until;
+    newSet.rrule(new RRule(opts));
+  });
+  const parentDuration = parent.end.getTime() - parent.start.getTime();
+  const newDuration =
+    overrides.start && overrides.end
+      ? overrides.end.getTime() - overrides.start.getTime()
+      : parentDuration;
+  return {
+    ...parent,
+    ...overrides,
+    event_id: `${parent.event_id}_from_${fromDate.getTime()}`,
+    start: fromDate,
+    end: new Date(fromDate.getTime() + newDuration),
+    recurring: newSet,
+    _recurringMeta: undefined,
+  };
+};
+
+/**
+ * Applies an edit to a recurring series according to the chosen scope.
+ *
+ * - "all"       → updates every field on the parent series in place.
+ * - "this"      → exdates this occurrence on the parent; inserts a standalone
+ *                 (non-recurring) override event.
+ * - "following" → truncates the parent series before this occurrence; creates a
+ *                 new recurring series starting from this occurrence.
+ */
+export const applyRecurringEdit = (
+  events: ProcessedEvent[],
+  updatedEvent: ProcessedEvent,
+  mode: RecurringEditMode
+): ProcessedEvent[] => {
+  const meta = updatedEvent._recurringMeta;
+  if (!meta) {
+    // Not a recurring instance — plain edit
+    return events.map((e) =>
+      e.event_id === updatedEvent.event_id ? { ...e, ...updatedEvent } : e
+    );
+  }
+
+  const parent = events.find((e) => e.event_id === meta.seriesId);
+  if (!parent) return events;
+
+  const originalStart = new Date(meta.originalStart);
+
+  if (mode === "all") {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { _recurringMeta: _ignored, ...rest } = updatedEvent;
+    return events.map((e) =>
+      e.event_id === meta.seriesId ? { ...parent, ...rest, event_id: parent.event_id } : e
+    );
+  }
+
+  if (mode === "this") {
+    const parentWithExdate = addExdateToEvent(parent, originalStart);
+    const standalone: ProcessedEvent = {
+      ...updatedEvent,
+      event_id: `${meta.seriesId}_override_${meta.originalStart}`,
+      recurring: undefined,
+      _recurringMeta: undefined,
+    };
+    return [
+      ...events.map((e) => (e.event_id === meta.seriesId ? parentWithExdate : e)),
+      standalone,
+    ];
+  }
+
+  // mode === "following"
+  const truncatedParent = truncateEventBefore(parent, originalStart);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _recurringMeta: _ignored2, ...overrideFields } = updatedEvent;
+  const newSeries = createSeriesFrom(parent, originalStart, overrideFields);
+  return [...events.map((e) => (e.event_id === meta.seriesId ? truncatedParent : e)), newSeries];
+};
+
+/**
+ * Applies a deletion to a recurring series according to the chosen scope.
+ *
+ * - "all"       → removes the entire parent series.
+ * - "this"      → exdates this occurrence; parent series remains.
+ * - "following" → truncates the parent series before this occurrence.
+ */
+export const applyRecurringDelete = (
+  events: ProcessedEvent[],
+  targetEvent: ProcessedEvent,
+  mode: RecurringEditMode
+): ProcessedEvent[] => {
+  const meta = targetEvent._recurringMeta;
+  if (!meta) {
+    return events.filter((e) => e.event_id !== targetEvent.event_id);
+  }
+
+  const parent = events.find((e) => e.event_id === meta.seriesId);
+  if (!parent) return events;
+
+  const originalStart = new Date(meta.originalStart);
+
+  if (mode === "all") {
+    return events.filter((e) => e.event_id !== meta.seriesId);
+  }
+
+  if (mode === "this") {
+    const parentWithExdate = addExdateToEvent(parent, originalStart);
+    return events.map((e) => (e.event_id === meta.seriesId ? parentWithExdate : e));
+  }
+
+  // mode === "following"
+  const truncatedParent = truncateEventBefore(parent, originalStart);
+  return events.map((e) => (e.event_id === meta.seriesId ? truncatedParent : e));
+};
+
+// ─── End RRuleSet helpers ────────────────────────────────────────────────────
 
 export const getOneView = (state: Partial<SchedulerProps>): View => {
   if (state.month) {
@@ -147,6 +322,11 @@ export const getRecurrencesForDate = (event: ProcessedEvent, today: Date, timeZo
           recurrenceId: index,
           start: start,
           end: addMilliseconds(start, duration),
+          // Stamp recurring metadata so editors/deletions can identify this occurrence
+          _recurringMeta: {
+            seriesId: event.event_id,
+            originalStart: d.toISOString(),
+          },
         };
       })
       .map((event) => convertEventTimeZone(event, timeZone));
