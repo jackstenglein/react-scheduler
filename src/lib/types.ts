@@ -6,7 +6,16 @@ import { SelectOption } from "./components/inputs/SelectInput";
 import { View } from "./components/nav/Navigation";
 import { Store } from "./store/types";
 import { StateItem } from "./views/Editor";
-import type { RRule } from "rrule";
+import type { RRule, RRuleSet } from "rrule";
+
+/** Controls which occurrences are affected when editing/deleting a recurring event instance */
+export type RecurringEditMode = "this" | "following" | "all";
+
+/** Stamped onto every rendered occurrence of a recurring event */
+export interface RecurringMeta {
+  seriesId: string | number;
+  originalStart: string;
+}
 
 export type DayHours =
   | 0
@@ -83,7 +92,12 @@ interface CalendarEvent {
   subtitle?: React.ReactNode;
   start: Date;
   end: Date;
-  recurring?: RRule;
+  recurring?: RRule | RRuleSet;
+  /**
+   * Stamped at render-time on every expanded occurrence of a recurring event.
+   * Never set this manually on raw events — it is injected by getRecurrencesForDate.
+   */
+  _recurringMeta?: RecurringMeta;
   disabled?: boolean;
   color?: string;
   textColor?: string;
@@ -127,11 +141,10 @@ export interface Translations {
 
 export type InputTypes = "input" | "date" | "select" | "hidden";
 
-export interface EventRendererProps
-  extends Pick<
-    React.HTMLAttributes<HTMLElement>,
-    "draggable" | "onDragStart" | "onDragEnd" | "onDragOver" | "onDragEnter" | "onClick"
-  > {
+export interface EventRendererProps extends Pick<
+  React.HTMLAttributes<HTMLElement>,
+  "draggable" | "onDragStart" | "onDragEnd" | "onDragOver" | "onDragEnter" | "onClick"
+> {
   event: ProcessedEvent;
 }
 export interface FieldInputProps {
@@ -216,7 +229,11 @@ export interface SchedulerHelpers {
   close(): void;
   loading(status: boolean): void;
   edited?: ProcessedEvent;
-  onConfirm(event: ProcessedEvent | ProcessedEvent[], action: EventActions): void;
+  onConfirm(
+    event: ProcessedEvent | ProcessedEvent[],
+    action: EventActions,
+    recurringMode?: RecurringEditMode
+  ): void;
   [resourceKey: string]: unknown;
 }
 export interface SchedulerProps {
