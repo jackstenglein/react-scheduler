@@ -33,7 +33,7 @@ export const getOneView = (state: Partial<SchedulerProps>): View => {
   throw new Error("No views were selected");
 };
 
-export const getAvailableViews = (state: SchedulerProps) => {
+export const getAvailableViews = (state: Partial<SchedulerProps>) => {
   const views: View[] = [];
   if (state.month) {
     views.push("month");

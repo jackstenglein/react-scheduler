@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
@@ -9,6 +10,13 @@ import peerDepsExternal from "rollup-plugin-peer-deps-external";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => ({
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["./src/vitest.setup.ts"],
+    include: ["src/**/*.vitest.{ts,tsx}"],
+    css: true,
+  },
   plugins: [
     react(),
     tsconfigPaths({
