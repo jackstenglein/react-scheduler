@@ -21,6 +21,7 @@ import {
   SchedulerProps,
 } from "../types";
 import { StateEvent } from "../views/Editor";
+import { SchedulerState } from "../store/types";
 
 export const getOneView = (state: Partial<SchedulerProps>): View => {
   if (state.month) {
@@ -33,16 +34,19 @@ export const getOneView = (state: Partial<SchedulerProps>): View => {
   throw new Error("No views were selected");
 };
 
-export const getAvailableViews = (state: Partial<SchedulerProps>) => {
+export const getAvailableViews = (state: Partial<SchedulerState>) => {
   const views: View[] = [];
-  if (state.month) {
-    views.push("month");
+  if (state.day) {
+    views.push("day");
   }
   if (state.week) {
     views.push("week");
   }
-  if (state.day) {
-    views.push("day");
+  if (state.month) {
+    views.push("month");
+  }
+  if (state.enableAgenda) {
+    views.push("agenda");
   }
   return views;
 };

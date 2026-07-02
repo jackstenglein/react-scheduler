@@ -23,19 +23,18 @@ describe("Scheduler", () => {
     expect(screen.getByTestId("grid")).toBeInTheDocument();
   });
 
-  it("renders view navigation buttons for enabled views", () => {
+  it("renders view navigation button", () => {
     renderScheduler();
-    expect(screen.getByRole("button", { name: "Month" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Week" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Day" })).toBeInTheDocument();
+    expect(screen.getByTestId("view-button")).toBeInTheDocument();
   });
 
   it("switches to month view when the month button is clicked", async () => {
     const user = userEvent.setup();
     renderScheduler({ view: "week" });
 
-    await user.click(screen.getByRole("button", { name: "Month" }));
-    expect(screen.getByRole("button", { name: "Month" })).toHaveClass("MuiButton-colorPrimary");
+    await user.click(screen.getByTestId("view-button"));
+    await user.click(screen.getByRole("menuitem", { name: "Month" }));
+    expect(screen.getByTestId("view-button")).toHaveTextContent("Month");
   });
 
   it("renders a loading overlay when loading is true", () => {

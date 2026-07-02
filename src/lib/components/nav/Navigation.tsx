@@ -1,23 +1,14 @@
-import { Fragment, useState } from "react";
-import {
-  Button,
-  useTheme,
-  useMediaQuery,
-  Popover,
-  MenuList,
-  MenuItem,
-  IconButton,
-} from "@mui/material";
+import React, { useState } from "react";
+import { Button, MenuItem, Menu } from "@mui/material";
 import { WeekDateBtn } from "./WeekDateBtn";
 import { DayDateBtn } from "./DayDateBtn";
 import { MonthDateBtn } from "./MonthDateBtn";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ViewAgendaIcon from "@mui/icons-material/ViewAgenda";
 import useStore from "../../hooks/useStore";
 import { NavigationDiv } from "../../styles/styles";
 import { getTimeZonedDate } from "../../helpers/generals";
+import { ExpandMore } from "@mui/icons-material";
 
-export type View = "month" | "week" | "day";
+export type View = "month" | "week" | "day" | "agenda";
 
 const Navigation = () => {
   const {
@@ -37,15 +28,12 @@ const Navigation = () => {
     timeZone,
     agenda,
     toggleAgenda,
-    enableAgenda,
   } = useStore();
-  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
-  const theme = useTheme();
-  const isDesktop = useMediaQuery(theme.breakpoints.up("sm"));
+  const [viewMenuAnchor, setViewMenuAnchor] = useState<Element | null>();
   const views = getViews();
 
-  const toggleMoreMenu = (el?: Element) => {
-    setAnchorEl(el || null);
+  const onToggleViewMenu = (event?: React.MouseEvent<HTMLButtonElement>) => {
+    setViewMenuAnchor(event?.currentTarget);
   };
 
   const handleSelectedDateChange = (date: Date) => {
@@ -57,6 +45,10 @@ const Navigation = () => {
   };
 
   const handleChangeView = (view: View) => {
+    if (view === "agenda") {
+      toggleAgenda();
+      return;
+    }
     handleState(view, "view");
     if (onViewChange && typeof onViewChange === "function") {
       onViewChange(view, agenda);
@@ -111,82 +103,42 @@ const Navigation = () => {
         >
           {translations.navigation.today}
         </Button>
-        {enableAgenda &&
-          (isDesktop ? (
-            <Button
-              color={agenda ? "primary" : "inherit"}
-              onClick={toggleAgenda}
-              aria-label={translations.navigation.agenda}
-            >
-              {translations.navigation.agenda}
-            </Button>
-          ) : (
-            <IconButton
-              color={agenda ? "primary" : "default"}
-              style={{ padding: 5 }}
-              onClick={toggleAgenda}
-            >
-              <ViewAgendaIcon />
-            </IconButton>
-          ))}
 
-        {views.length > 1 &&
-          (isDesktop ? (
-            views.map((v) => (
-              <Button
-                key={v}
-                color={v === view ? "primary" : "inherit"}
-                onClick={() => handleChangeView(v)}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  handleChangeView(v);
-                }}
-              >
-                {translations.navigation[v]}
-              </Button>
-            ))
-          ) : (
-            <Fragment>
-              <IconButton
-                style={{ padding: 5 }}
-                onClick={(e) => {
-                  toggleMoreMenu(e.currentTarget);
-                }}
-              >
-                <MoreVertIcon />
-              </IconButton>
-              <Popover
-                open={Boolean(anchorEl)}
-                anchorEl={anchorEl}
-                onClose={() => {
-                  toggleMoreMenu();
-                }}
-                anchorOrigin={{
-                  vertical: "center",
-                  horizontal: "center",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "center",
-                }}
-              >
-                <MenuList autoFocusItem={!!anchorEl} disablePadding>
-                  {views.map((v) => (
-                    <MenuItem
-                      key={v}
-                      selected={v === view}
-                      onClick={() => {
-                        toggleMoreMenu();
-                        handleChangeView(v);
-                      }}
-                    >
-                      {translations.navigation[v]}
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </Popover>
-            </Fragment>
-          ))}
+        {views.length > 1 && (
+          <>
+            <Button
+              data-testid="view-button"
+              endIcon={<ExpandMore />}
+              onClick={onToggleViewMenu}
+              sx={{ mr: 2 }}
+            >
+              {translations.navigation[view]}
+            </Button>
+            <Menu
+              open={Boolean(viewMenuAnchor)}
+              anchorEl={viewMenuAnchor}
+              onClose={() => onToggleViewMenu()}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              transformOrigin={{ vertical: "top", horizontal: "center" }}
+            >
+              {views.map((v) => (
+                <MenuItem
+                  key={v}
+                  selected={v === view}
+                  onClick={() => {
+                    handleChangeView(v);
+                    onToggleViewMenu();
+                  }}
+                >
+                  {translations.navigation[v]}
+                </MenuItem>
+              ))}
+            </Menu>
+          </>
+        )}
       </div>
     </NavigationDiv>
   );

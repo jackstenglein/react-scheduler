@@ -20,6 +20,7 @@ import {
   traversCrossingEvents,
 } from "../generals";
 import { FieldProps, ProcessedEvent, SchedulerProps } from "../../types";
+import { SchedulerState } from "../../store/types";
 
 const makeEvent = (overrides: Partial<ProcessedEvent> = {}): ProcessedEvent => ({
   event_id: 1,
@@ -53,15 +54,13 @@ describe("getOneView", () => {
 
 describe("getAvailableViews", () => {
   it("returns all enabled views in order", () => {
-    expect(getAvailableViews({ month: {}, week: {}, day: {} } as SchedulerProps)).toEqual([
-      "month",
-      "week",
-      "day",
-    ]);
+    expect(
+      getAvailableViews({ month: {}, week: {}, day: {}, enableAgenda: true } as SchedulerState)
+    ).toEqual(["day", "week", "month", "agenda"]);
   });
 
   it("returns only enabled views", () => {
-    expect(getAvailableViews({ week: {}, day: {} } as SchedulerProps)).toEqual(["week", "day"]);
+    expect(getAvailableViews({ week: {}, day: {} } as SchedulerProps)).toEqual(["day", "week"]);
   });
 
   it("returns empty array when no views are enabled", () => {

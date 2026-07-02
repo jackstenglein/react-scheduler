@@ -82,6 +82,7 @@ const defaultViews = (props: Partial<SchedulerProps>) => {
     month: month !== null ? Object.assign(defaultMonth, month) : null,
     week: week !== null ? Object.assign(defaultWeek, week) : null,
     day: day !== null ? Object.assign(defaultDay, day) : null,
+    agenda: false,
   };
 };
 

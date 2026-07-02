@@ -10,36 +10,40 @@ describe("Navigation", () => {
     expect(screen.getByRole("button", { name: "Today" })).toBeInTheDocument();
   });
 
-  it("renders agenda toggle when agenda is enabled on desktop", () => {
-    renderWithProviders(<Navigation />, { initial: { enableAgenda: true } });
-    expect(screen.getByRole("button", { name: "Agenda" })).toBeInTheDocument();
-  });
-
-  it("renders view buttons for each enabled view", () => {
+  it("renders view items for each enabled view", async () => {
+    const user = userEvent.setup();
     renderWithProviders(<Navigation />, {
-      initial: { month: {}, week: {}, day: {} },
+      initial: { week: {}, day: {}, enableAgenda: true },
     });
-    expect(screen.getByRole("button", { name: "Month" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Week" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Day" })).toBeInTheDocument();
+    await user.click(screen.getByTestId("view-button"));
+    expect(screen.getByRole("menuitem", { name: "Day" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Week" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Agenda" })).toBeInTheDocument();
+    // TODO: look up how to assert month does not exist
   });
 
-  it("highlights the active view button", () => {
+  it("highlights the active view item", async () => {
+    const user = userEvent.setup();
     renderWithProviders(<Navigation />, {
       initial: { view: "day", month: {}, week: {}, day: {} },
     });
-    expect(screen.getByRole("button", { name: "Day" })).toHaveClass("MuiButton-colorPrimary");
-    expect(screen.getByRole("button", { name: "Week" })).not.toHaveClass("MuiButton-colorPrimary");
+
+    await user.click(screen.getByTestId("view-button"));
+
+    expect(screen.getByRole("menuitem", { name: "Day" })).toHaveClass("Mui-selected");
+    expect(screen.getByRole("menuitem", { name: "Week" })).not.toHaveClass("Mui-selected");
   });
 
-  it("switches view when a view button is clicked", async () => {
+  it("switches view when a view item is clicked", async () => {
     const user = userEvent.setup();
     renderWithProviders(<Navigation />, {
       initial: { view: "week", month: {}, week: {}, day: {} },
     });
 
-    await user.click(screen.getByRole("button", { name: "Day" }));
-    expect(screen.getByRole("button", { name: "Day" })).toHaveClass("MuiButton-colorPrimary");
+    await user.click(screen.getByTestId("view-button"));
+    await user.click(screen.getByRole("menuitem", { name: "Day" }));
+
+    expect(screen.getByTestId("view-button")).toHaveTextContent("Day");
   });
 
   it("returns null when navigation and view navigator are both disabled", () => {
