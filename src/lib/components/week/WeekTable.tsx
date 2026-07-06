@@ -20,12 +20,12 @@ import {
   isToday,
   startOfDay,
 } from "date-fns";
-import TodayTypo from "../common/TodayTypo";
 import usePosition from "../../positionManger/usePosition";
 import EventItem from "../events/EventItem";
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import TodayEvents from "../events/TodayEvents";
 import Cell from "../common/Cell";
+import { DateButton } from "../common/DateButton";
 
 type Props = {
   daysList: Date[];
@@ -57,8 +57,7 @@ const WeekTable = ({
     timeZone,
     stickyNavigation,
   } = useStore();
-  const { startHour, endHour, step, cellRenderer, disableGoToDay, headRenderer, hourRenderer } =
-    week!;
+  const { startHour, endHour, step, cellRenderer, disableGoToDay, hourRenderer } = week!;
   const { renderedSlots } = usePosition();
   const { headersRef, bodyRef } = useSyncScroll();
   const MULTI_SPACE = MULTI_DAY_EVENT_HEIGHT;
@@ -67,7 +66,7 @@ const WeekTable = ({
   const hFormat = getHourFormat(hourFormat);
 
   // Equalizing multi-day section height except in resource/tabs mode
-  const headerHeight = useMemo(() => {
+  const _headerHeight = useMemo(() => {
     const shouldEqualize = resources.length && resourceViewMode === "default";
     const allWeekMulti = filterMultiDaySlot(
       shouldEqualize ? events : resourcedEvents,
@@ -86,7 +85,7 @@ const WeekTable = ({
     timeZone,
   ]);
 
-  const renderMultiDayEvents = (
+  const _renderMultiDayEvents = (
     events: ProcessedEvent[],
     today: Date,
     resource?: DefaultResource
@@ -125,6 +124,8 @@ const WeekTable = ({
     });
   };
 
+  console.log(_headerHeight, _renderMultiDayEvents);
+
   return (
     <>
       {/* Header days */}
@@ -134,24 +135,14 @@ const WeekTable = ({
         sticky="1"
         stickyNavigation={stickyNavigation}
       >
-        <span className="rs__cell rs__time"></span>
+        <Box></Box>
         {daysList.map((date, i) => (
-          <span
+          <DateButton
             key={i}
-            className={`rs__cell rs__header ${isToday(date) ? "rs__today_cell" : ""}`}
-            style={{ height: headerHeight }}
-          >
-            {typeof headRenderer === "function" ? (
-              <div>{headRenderer({ day: date, events: resourcedEvents, resource })}</div>
-            ) : (
-              <TodayTypo
-                date={date}
-                onClick={!disableGoToDay ? handleGotoDay : undefined}
-                locale={locale}
-              />
-            )}
-            {renderMultiDayEvents(resourcedEvents, date, resource)}
-          </span>
+            date={date}
+            onClick={!disableGoToDay ? handleGotoDay : undefined}
+            locale={locale}
+          />
         ))}
       </TableGrid>
       {/* Time Cells */}

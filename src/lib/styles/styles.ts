@@ -94,7 +94,8 @@ export const TableGrid = styled("div")<{
   indent?: string;
 }>(({ days, sticky = "0", stickyNavigation, indent = "1", theme }) => ({
   display: "grid",
-  gridTemplateColumns: +indent > 0 ? `10% repeat(${days}, 1fr)` : `repeat(${days}, 1fr)`,
+  gridTemplateColumns:
+    +indent > 0 ? `minmax(68px, auto) repeat(${days}, 1fr)` : `repeat(${days}, 1fr)`,
   overflowX: "auto",
   overflowY: "hidden",
   position: sticky === "1" ? "sticky" : "relative",
@@ -107,7 +108,7 @@ export const TableGrid = styled("div")<{
   borderColor: (theme.vars || theme).palette.grey[300],
   borderWidth: "0 0 0 1px",
   "&:first-of-type": {
-    borderWidth: "1px 0 0 1px",
+    borderWidth: "1px 0 1px 1px",
   },
   "&:last-of-type": {
     borderWidth: "0 0 1px 1px",
