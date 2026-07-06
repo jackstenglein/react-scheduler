@@ -309,7 +309,7 @@ export const isTimeZonedToday = ({
 };
 
 export const getHourFormat = (hourFormat: "12" | "24") => {
-  return hourFormat === "12" ? "hh:mm a" : "HH:mm";
+  return hourFormat === "12" ? "h:mm a" : "HH:mm";
 };
 
 /**

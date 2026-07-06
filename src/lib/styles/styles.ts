@@ -106,12 +106,17 @@ export const TableGrid = styled("div")<{
   },
   borderStyle: "solid",
   borderColor: (theme.vars || theme).palette.grey[300],
-  borderWidth: "0 0 0 1px",
+  borderWidth: "1px",
   "&:first-of-type": {
-    borderWidth: "1px 0 1px 1px",
+    background: (theme.vars || theme).palette.background.paper,
+    borderTopLeftRadius: theme.spacing(1),
+    borderTopRightRadius: theme.spacing(1),
   },
   "&:last-of-type": {
-    borderWidth: "0 0 1px 1px",
+    borderTopWidth: "0",
+    borderRightWidth: "0",
+    borderBottomLeftRadius: theme.spacing(1),
+    borderBottomRightRadius: theme.spacing(1),
   },
   "& .rs__cell": {
     background: (theme.vars || theme).palette.background.paper,
@@ -119,6 +124,9 @@ export const TableGrid = styled("div")<{
     borderStyle: "solid",
     borderColor: (theme.vars || theme).palette.grey[300],
     borderWidth: "0 1px 1px 0",
+    "&.rs__last_row": {
+      borderBottomWidth: "0",
+    },
     "&.rs__header": {
       "& > :first-of-type": {
         padding: "2px 5px",

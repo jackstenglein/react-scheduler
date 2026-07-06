@@ -57,7 +57,7 @@ const WeekTable = ({
     timeZone,
     stickyNavigation,
   } = useStore();
-  const { startHour, endHour, step, cellRenderer, disableGoToDay, hourRenderer } = week!;
+  const { startHour, endHour, step, cellRenderer, disableGoToDay } = week!;
   const { renderedSlots } = usePosition();
   const { headersRef, bodyRef } = useSyncScroll();
   const MULTI_SPACE = MULTI_DAY_EVENT_HEIGHT;
@@ -145,23 +145,45 @@ const WeekTable = ({
           />
         ))}
       </TableGrid>
+
       {/* Time Cells */}
       <TableGrid days={daysList.length} ref={bodyRef}>
         {hours.map((h, i) => (
           <Fragment key={i}>
-            <span style={{ height: cellHeight }} className="rs__cell rs__header rs__time">
-              {typeof hourRenderer === "function" ? (
-                <div>{hourRenderer(format(h, hFormat, { locale }))}</div>
-              ) : (
-                <Typography variant="caption">{format(h, hFormat, { locale })}</Typography>
+            <Box
+              sx={{
+                height: cellHeight,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "start",
+                alignItems: "center",
+                borderRight: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              {i > 0 && (
+                <span>
+                  <Typography
+                    component="p"
+                    variant="caption"
+                    color="textSecondary"
+                    sx={{ position: "relative", top: "-50%" }}
+                  >
+                    {format(h, hFormat, { locale })}
+                  </Typography>
+                </span>
               )}
-            </span>
+            </Box>
+
             {daysList.map((date, ii) => {
               const start = new Date(`${format(date, "yyyy/MM/dd")} ${format(h, hFormat)}`);
               const end = addMinutes(start, step);
               const field = resourceFields.idField;
               return (
-                <span key={ii} className={`rs__cell ${isToday(date) ? "rs__today_cell" : ""}`}>
+                <span
+                  key={ii}
+                  className={`rs__cell ${isToday(date) ? "rs__today_cell" : ""} ${i === hours.length - 1 ? "rs__last_row" : ""}`}
+                >
                   {/* Events of each day - run once on the top hour column */}
                   {i === 0 && (
                     <TodayEvents

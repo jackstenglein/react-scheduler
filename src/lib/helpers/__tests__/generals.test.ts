@@ -389,7 +389,7 @@ describe("traversCrossingEvents", () => {
 
 describe("getHourFormat", () => {
   it("returns 12-hour format string", () => {
-    expect(getHourFormat("12")).toBe("hh:mm a");
+    expect(getHourFormat("12")).toBe("h:mm a");
   });
 
   it("returns 24-hour format string", () => {
