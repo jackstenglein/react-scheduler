@@ -7,8 +7,14 @@ import useStore from "../hooks/useStore";
 import { WeekAgenda } from "./WeekAgenda";
 import WeekTable from "../components/week/WeekTable";
 
-const Week = () => {
+/**
+ * Renders the week (or day) view. The day view is treated the same
+ * as the week view, except only a single day is included.
+ */
+export const Week = () => {
   const {
+    view,
+    day,
     week,
     selectedDate,
     height,
@@ -21,11 +27,20 @@ const Week = () => {
     fields,
     agenda,
   } = useStore();
-  const { weekStartOn, weekDays, startHour, endHour, step } = week!;
+
+  const { weekStartOn, weekDays } = week!;
+  let { startHour, endHour, step } = week!;
+  if (view === "day") {
+    startHour = day!.startHour;
+    endHour = day!.endHour;
+    step = day!.step;
+  }
+
   const _weekStart = startOfWeek(selectedDate, { weekStartsOn: weekStartOn });
   const daysList = weekDays.map((d) => addDays(_weekStart, d));
   const weekStart = startOfDay(daysList[0]);
   const weekEnd = endOfDay(daysList[daysList.length - 1]);
+
   const START_TIME = set(selectedDate, { hours: startHour, minutes: 0, seconds: 0 });
   const END_TIME = set(selectedDate, { hours: endHour, minutes: -step, seconds: 0 });
   const hours = eachMinuteOfInterval(
@@ -42,7 +57,7 @@ const Week = () => {
     try {
       triggerLoading(true);
 
-      const events = await getRemoteEvents!({
+      const events = await getRemoteEvents?.({
         start: weekStart,
         end: weekEnd,
         view: "week",
@@ -55,11 +70,10 @@ const Week = () => {
     } finally {
       triggerLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getRemoteEvents]);
+  }, [getRemoteEvents, triggerLoading, handleState, weekEnd, weekStart]);
 
   useEffect(() => {
-    if (getRemoteEvents instanceof Function) {
+    if (getRemoteEvents) {
       fetchEvents();
     }
   }, [fetchEvents, getRemoteEvents]);
@@ -81,12 +95,10 @@ const Week = () => {
         hours={hours}
         cellHeight={CELL_HEIGHT}
         minutesHeight={MINUTE_HEIGHT}
-        daysList={daysList}
+        daysList={view === "day" ? [selectedDate] : daysList}
       />
     );
   };
 
   return resources.length ? <WithResources renderChildren={renderTable} /> : renderTable();
 };
-
-export { Week };

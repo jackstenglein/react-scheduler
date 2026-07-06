@@ -3,7 +3,6 @@ import { Navigation } from "./components/nav/Navigation";
 import Editor from "./views/Editor";
 import { CircularProgress, Typography } from "@mui/material";
 import { Month } from "./views/Month";
-import { Day } from "./views/Day";
 import { Table, Wrapper } from "./styles/styles";
 import { forwardRef, useMemo } from "react";
 import useStore from "./hooks/useStore";
@@ -20,9 +19,8 @@ const SchedulerComponent = forwardRef<SchedulerRef, unknown>(function SchedulerC
       case "month":
         return <Month />;
       case "week":
-        return <Week />;
       case "day":
-        return <Day />;
+        return <Week />;
       default:
         return "";
     }
