@@ -1,4 +1,4 @@
-import { Avatar, Typography, useTheme } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import {
   addDays,
   endOfDay,
@@ -49,7 +49,6 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
   const { weekDays, startHour, endHour, cellRenderer, headRenderer, disableGoToDay } = month!;
   const { headersRef, bodyRef } = useSyncScroll();
 
-  const theme = useTheme();
   const monthStart = startOfMonth(selectedDate);
   const hFormat = getHourFormat(hourFormat);
   const CELL_HEIGHT = height / eachWeekStart.length;
@@ -96,32 +95,36 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
                     {headRenderer({ day: today, events: resourcedEvents, resource })}
                   </div>
                 ) : (
-                  <Avatar
-                    style={{
-                      width: 27,
-                      height: 27,
+                  <Button
+                    data-test-id="month-date-button"
+                    variant={isToday ? "contained" : "text"}
+                    color={isToday ? "info" : "primary"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!disableGoToDay) {
+                        handleGotoDay(today);
+                      }
+                    }}
+                    sx={{
                       position: "absolute",
                       top: 0,
-                      background: isToday
-                        ? (theme.vars || theme).palette.secondary.main
-                        : "transparent",
-                      color: isToday ? (theme.vars || theme).palette.secondary.contrastText : "",
-                      marginBottom: 2,
+                      right: 0,
+                      borderRadius: "50%",
+                      aspectRatio: "1 / 1",
+                      minWidth: "1.5rem",
+                      height: "1.5rem",
+                      fontSize: "0.75rem",
+                      padding: 0.75,
+                      color: (theme) =>
+                        isToday
+                          ? theme.palette.primary.contrastText
+                          : isSameMonth(today, monthStart)
+                            ? theme.palette.text.primary
+                            : theme.palette.text.secondary,
                     }}
                   >
-                    <Typography
-                      color={!isSameMonth(today, monthStart) ? "#ccc" : "textPrimary"}
-                      className={!disableGoToDay ? "rs__hover__op" : ""}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!disableGoToDay) {
-                          handleGotoDay(today);
-                        }
-                      }}
-                    >
-                      {format(today, "dd")}
-                    </Typography>
-                  </Avatar>
+                    {format(today, "d", { locale })}
+                  </Button>
                 )}
 
                 <MonthEvents
@@ -166,10 +169,9 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
       resourceFields,
       selectedDate,
       startHour,
-      (theme.vars || theme).palette.secondary.contrastText,
-      (theme.vars || theme).palette.secondary.main,
       timeZone,
       weekDays,
+      locale,
     ]
   );
 
@@ -186,7 +188,13 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
         {daysList.map((date, i) => (
           <Typography
             key={i}
-            className="rs__cell rs__header rs__header__center"
+            sx={{
+              padding: 1,
+              borderStyle: "solid",
+              borderColor: "divider",
+              borderWidth: 0,
+              borderLeftWidth: i === 0 ? 0 : "1px",
+            }}
             align="center"
             variant="body2"
           >

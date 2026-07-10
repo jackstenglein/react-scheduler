@@ -1,5 +1,7 @@
 import { Button, Typography } from "@mui/material";
 import { format, Locale } from "date-fns";
+import { isTimeZonedToday } from "../../helpers/generals";
+import useStore from "../../hooks/useStore";
 
 interface DateButtonProps {
   date: Date;
@@ -11,6 +13,8 @@ interface DateButtonProps {
  * Renders a DateButton in the header of the calendar.
  */
 export function DateButton({ date, onClick, locale }: DateButtonProps) {
+  const { timeZone } = useStore();
+  const isToday = isTimeZonedToday({ dateLeft: date, timeZone });
   return (
     <Button
       onClick={() => onClick?.(date)}
@@ -26,14 +30,14 @@ export function DateButton({ date, onClick, locale }: DateButtonProps) {
       <Typography
         variant="subtitle1"
         component="span"
-        color="textSecondary"
+        color={isToday ? "primary" : "textSecondary"}
         sx={{ fontSize: "0.875rem", textTransform: "capitalize" }}
       >
         {format(date, "EEE", { locale })}
       </Typography>
       <Typography
         component="span"
-        color="textPrimary"
+        color={isToday ? "primary.contrastText" : "textPrimary"}
         sx={{
           display: "flex",
           alignItems: "center",
@@ -42,12 +46,15 @@ export function DateButton({ date, onClick, locale }: DateButtonProps) {
           width: "46px",
           height: "46px",
           borderRadius: "50%",
+          backgroundColor: isToday ? "primary.main" : undefined,
           "button:hover &": {
-            backgroundColor: "var(--mui-palette-action-hover, rgba(25, 118, 210, 0.04))",
+            backgroundColor: isToday
+              ? "primary.dark"
+              : "var(--mui-palette-action-hover, rgba(25, 118, 210, 0.04))",
           },
         }}
       >
-        {format(date, "dd", { locale })}
+        {format(date, "d", { locale })}
       </Typography>
     </Button>
   );

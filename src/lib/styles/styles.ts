@@ -146,15 +146,6 @@ export const TableGrid = styled("div")<{
         writingMode: "vertical-rl",
       },
     },
-    "& > button": {
-      width: "100%",
-      height: "100%",
-      borderRadius: 0,
-      cursor: "pointer",
-      "&:hover": {
-        background: alpha(theme.palette.primary.main, 0.1),
-      },
-    },
     "& .rs__event__item": {
       position: "absolute",
       zIndex: 1,

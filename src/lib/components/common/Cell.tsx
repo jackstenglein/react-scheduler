@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Button, alpha } from "@mui/material";
 import { useCellAttributes } from "../../hooks/useCellAttributes";
 import { CellRenderedProps } from "../../types";
 
@@ -42,6 +42,15 @@ const Cell = ({
         dateStyle: "full",
         timeStyle: "long",
       })} - ${end.toLocaleString("en", { dateStyle: "full", timeStyle: "long" })}`}
+      sx={{
+        width: "100%",
+        height: "100%",
+        borderRadius: 0,
+        cursor: "pointer",
+        "&:hover": {
+          background: (theme) => alpha(theme.palette.primary.main, 0.1),
+        },
+      }}
       {...props}
     >
       {children}
