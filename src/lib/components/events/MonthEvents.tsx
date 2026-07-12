@@ -7,7 +7,7 @@ import {
   differenceInCalendarWeeks,
   format,
 } from "date-fns";
-import { ProcessedEvent } from "../../types";
+import { RecurrenceEvent } from "../../types";
 import { Typography, useTheme } from "@mui/material";
 import EventItem from "./EventItem";
 import { MONTH_NUMBER_HEIGHT, MULTI_DAY_EVENT_HEIGHT } from "../../helpers/constants";
@@ -16,7 +16,7 @@ import useStore from "../../hooks/useStore";
 import usePosition from "../../positionManger/usePosition";
 
 interface MonthEventProps {
-  events: ProcessedEvent[];
+  events: RecurrenceEvent[];
   resourceId?: string;
   today: Date;
   eachWeekStart: Date[];
@@ -43,6 +43,7 @@ const MonthEvents = ({
 
   const renderEvents = useMemo(() => {
     const elements: React.ReactNode[] = [];
+    console.log("Rendering events for day: ", today, events);
 
     for (let i = 0; i < Math.min(events.length, LIMIT + 1); i++) {
       const event = convertEventTimeZone(events[i], timeZone);
@@ -72,7 +73,7 @@ const MonthEvents = ({
 
       const day = format(today, "yyyy-MM-dd");
       const rendered = renderedSlots?.[resourceId || "all"]?.[day];
-      const position = rendered?.[event.event_id] || 0;
+      const position = (rendered?.[event.event_id] || 0) + (event.recurrenceId ?? 0);
 
       if (position >= LIMIT) {
         elements.push(

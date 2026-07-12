@@ -17,6 +17,7 @@ import {
   DefaultResource,
   FieldProps,
   ProcessedEvent,
+  RecurrenceEvent,
   ResourceFields,
   SchedulerProps,
 } from "../types";
@@ -139,7 +140,11 @@ export const convertRRuleDateToDate = (rruleDate: Date) => {
   );
 };
 
-export const getRecurrencesForDate = (event: ProcessedEvent, today: Date, timeZone?: string) => {
+export const getRecurrencesForDate = (
+  event: ProcessedEvent,
+  today: Date,
+  timeZone?: string
+): RecurrenceEvent[] => {
   const duration = differenceInMilliseconds(event.end, event.start);
   if (event.recurring) {
     return event.recurring
@@ -192,9 +197,12 @@ export const filterTodayAgendaEvents = (events: ProcessedEvent[], today: Date) =
 
 export const sortEventsByTheLengthest = (events: ProcessedEvent[]) => {
   return events.sort((a, b) => {
-    const aDiff = a.end.getTime() - a.start.getTime();
-    const bDiff = b.end.getTime() - b.start.getTime();
-    return bDiff - aDiff;
+    const aDays = differenceInDays(a.end, a.start);
+    const bDays = differenceInDays(b.end, b.start);
+    if (aDays !== bDays) {
+      return bDays - aDays;
+    }
+    return a.start.getTime() - b.start.getTime();
   });
 };
 
@@ -255,7 +263,10 @@ export const filterMultiDaySlot = (
   return list;
 };
 
-export const convertEventTimeZone = (event: ProcessedEvent, timeZone?: string) => {
+export const convertEventTimeZone = (
+  event: RecurrenceEvent,
+  timeZone?: string
+): RecurrenceEvent => {
   return {
     ...event,
     start: getTimeZonedDate(event.start, timeZone),

@@ -190,6 +190,7 @@ export interface FieldProps {
   config?: FieldInputProps;
 }
 export type ProcessedEvent = CalendarEvent & Record<string, any>;
+export type RecurrenceEvent = ProcessedEvent & { recurrenceId?: number };
 export type EventActions = "create" | "edit";
 export type RemoteQuery = {
   start: Date;

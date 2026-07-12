@@ -15,6 +15,7 @@ type Props = {
 };
 
 const setEventPositions = (events: ProcessedEvent[]) => {
+  console.log("Setting event positions for events: ", events);
   const slots: PositionManagerState["renderedSlots"][string] = {};
   for (let i = 0; i < events.length; i++) {
     let position = 0;
@@ -34,6 +35,7 @@ const setEventPositions = (events: ProcessedEvent[]) => {
     }
   }
 
+  console.log("Final event positions: ", slots);
   return slots;
 };
 

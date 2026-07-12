@@ -17,6 +17,7 @@ function calculateTop({ startHour, minuteHeight, timeZone }: CurrentTimeBarProps
   return minutesFromTop * minuteHeight;
 }
 
+/** Renders a bar indicating the current time. */
 const CurrentTimeBar = (props: CurrentTimeBarProps) => {
   const [top, setTop] = useState(calculateTop(props));
   const { startHour, step, minuteHeight, timeZone } = props;
