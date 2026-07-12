@@ -26,6 +26,12 @@ function App() {
           weekDays: [0, 1, 2, 3, 4, 5, 6],
           navigation: true,
         }}
+        day={{
+          startHour: 0,
+          endHour: 23,
+          step: 60,
+          navigation: true,
+        }}
         // events={generateRandomEvents(200)}
       />
     </Box>

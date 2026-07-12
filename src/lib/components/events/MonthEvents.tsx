@@ -8,13 +8,9 @@ import {
   format,
 } from "date-fns";
 import { ProcessedEvent } from "../../types";
-import { Typography } from "@mui/material";
+import { Typography, useTheme } from "@mui/material";
 import EventItem from "./EventItem";
-import {
-  MONTH_BAR_HEIGHT,
-  MONTH_NUMBER_HEIGHT,
-  MULTI_DAY_EVENT_HEIGHT,
-} from "../../helpers/constants";
+import { MONTH_NUMBER_HEIGHT, MULTI_DAY_EVENT_HEIGHT } from "../../helpers/constants";
 import { convertEventTimeZone, differenceInDaysOmitTime } from "../../helpers/generals";
 import useStore from "../../hooks/useStore";
 import usePosition from "../../positionManger/usePosition";
@@ -43,6 +39,7 @@ const MonthEvents = ({
   const LIMIT = Math.round((cellHeight - MONTH_NUMBER_HEIGHT) / MULTI_DAY_EVENT_HEIGHT - 1);
   const { translations, month, locale, timeZone } = useStore();
   const { renderedSlots } = usePosition();
+  const theme = useTheme();
 
   const renderEvents = useMemo(() => {
     const elements: React.ReactNode[] = [];
@@ -77,15 +74,23 @@ const MonthEvents = ({
       const rendered = renderedSlots?.[resourceId || "all"]?.[day];
       const position = rendered?.[event.event_id] || 0;
 
-      const topSpace = Math.min(position, LIMIT) * MULTI_DAY_EVENT_HEIGHT + MONTH_NUMBER_HEIGHT;
-
       if (position >= LIMIT) {
         elements.push(
           <Typography
             key={i}
-            width="100%"
-            className="rs__multi_day rs__hover__op"
-            style={{ top: topSpace, fontSize: 11 }}
+            sx={{
+              position: "absolute",
+              zIndex: "1",
+              top: `calc(${MULTI_DAY_EVENT_HEIGHT}px * ${position} + ${MONTH_NUMBER_HEIGHT}px + ${theme.spacing(position * 0.25)})`,
+              fontSize: 11,
+              paddingLeft: 0.25,
+              width: 1,
+              ":hover": {
+                opacity: 0.7,
+                textDecoration: "underline",
+                cursor: "pointer",
+              },
+            }}
             onClick={(e) => {
               e.stopPropagation();
               onViewMore(today);
@@ -100,14 +105,16 @@ const MonthEvents = ({
       elements.push(
         <div
           key={`${event.event_id}_${i}`}
-          className="rs__multi_day"
           style={{
-            top: topSpace,
+            position: "absolute",
+            zIndex: "1",
+            top: `calc(${MULTI_DAY_EVENT_HEIGHT}px * ${position} + ${MONTH_NUMBER_HEIGHT}px + ${theme.spacing(position * 0.25)})`,
             width: `${100 * eventLength}%`,
-            height: MONTH_BAR_HEIGHT,
+            height: `${MULTI_DAY_EVENT_HEIGHT}px`,
           }}
         >
           <EventItem
+            variant="text"
             event={event}
             showdate={false}
             multiday={differenceInDaysOmitTime(event.start, event.end) > 0}
@@ -133,6 +140,7 @@ const MonthEvents = ({
     translations.moreEvents,
     onViewMore,
     timeZone,
+    theme,
   ]);
 
   return <Fragment>{renderEvents}</Fragment>;

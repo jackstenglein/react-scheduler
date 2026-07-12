@@ -1,6 +1,5 @@
 import { differenceInMinutes } from "date-fns";
 import { Fragment } from "react";
-import { BORDER_HEIGHT } from "../../helpers/constants";
 import { isTimeZonedToday, traversCrossingEvents } from "../../helpers/generals";
 import { ProcessedEvent } from "../../types";
 import CurrentTimeBar from "./CurrentTimeBar";
@@ -43,20 +42,13 @@ const TodayEvents = ({
       {todayEvents.map((event, i) => {
         const maxHeight = (endHour * 60 - startHour * 60) * minuteHeight;
         const eventHeight = differenceInMinutes(event.end, event.start) * minuteHeight;
-        const height = Math.min(eventHeight, maxHeight) - BORDER_HEIGHT;
-
-        const calendarStartInMins = startHour * 60;
-        const eventStartInMins = event.start.getHours() * 60 + event.start.getMinutes();
-        const minituesFromTop = Math.max(eventStartInMins - calendarStartInMins, 0);
-
-        const topSpace = minituesFromTop * minuteHeight;
-        /** Add border factor to height of each slot */
-        const slots = height / 60;
-        const heightBorderFactor = slots * BORDER_HEIGHT;
+        const height = Math.min(eventHeight, maxHeight);
 
         /** Calculate top space */
-        const slotsFromTop = minituesFromTop / step;
-        const top = topSpace + slotsFromTop;
+        const calendarStartInMins = startHour * 60;
+        const eventStartInMins = event.start.getHours() * 60 + event.start.getMinutes();
+        const minutesFromTop = Math.max(eventStartInMins - calendarStartInMins, 0);
+        const top = minutesFromTop * minuteHeight;
 
         const crossingEvents = traversCrossingEvents(todayEvents, event);
         const alreadyRendered = crossingEvents.filter((e) => crossingIds.includes(e.event_id));
@@ -65,9 +57,9 @@ const TodayEvents = ({
         return (
           <div
             key={`${event.event_id}/${event.recurrenceId || ""}`}
-            className="rs__event__item"
             style={{
-              height: height + heightBorderFactor,
+              position: "absolute",
+              height,
               top,
               width:
                 alreadyRendered.length > 0

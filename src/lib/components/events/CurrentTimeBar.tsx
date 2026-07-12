@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { differenceInMinutes, set } from "date-fns";
-import { BORDER_HEIGHT } from "../../helpers/constants";
 import { getTimeZonedDate } from "../../helpers/generals";
 import { TimeIndicatorBar } from "../../styles/styles";
 
@@ -12,16 +11,10 @@ interface CurrentTimeBarProps {
   zIndex?: number;
 }
 
-function calculateTop({ startHour, step, minuteHeight, timeZone }: CurrentTimeBarProps): number {
+function calculateTop({ startHour, minuteHeight, timeZone }: CurrentTimeBarProps): number {
   const now = getTimeZonedDate(new Date(), timeZone);
-
   const minutesFromTop = differenceInMinutes(now, set(now, { hours: startHour, minutes: 0 }));
-  const topSpace = minutesFromTop * minuteHeight;
-  const slotsFromTop = minutesFromTop / step;
-  const borderFactor = slotsFromTop + BORDER_HEIGHT;
-  const top = topSpace + borderFactor;
-
-  return top;
+  return minutesFromTop * minuteHeight;
 }
 
 const CurrentTimeBar = (props: CurrentTimeBarProps) => {
@@ -31,8 +24,20 @@ const CurrentTimeBar = (props: CurrentTimeBarProps) => {
   useEffect(() => {
     const calcProps = { startHour, step, minuteHeight, timeZone };
     setTop(calculateTop(calcProps));
+
     const interval = setInterval(() => setTop(calculateTop(calcProps)), 60 * 1000);
-    return () => clearInterval(interval);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        setTop(calculateTop(calcProps));
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [startHour, step, minuteHeight, timeZone]);
 
   // Prevent showing bar on top of days/header

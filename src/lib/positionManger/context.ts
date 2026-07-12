@@ -1,7 +1,7 @@
 import { createContext } from "react";
 
 export type PositionManagerState = {
-  renderedSlots: { [day: string]: { [resourceId: string]: { [eventId: string]: number } } };
+  renderedSlots: { [resourceId: string]: { [day: string]: { [eventId: string]: number } } };
 };
 
 type PositionManagerProps = {

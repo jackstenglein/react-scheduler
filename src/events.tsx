@@ -49,10 +49,10 @@ export const EVENTS: ProcessedEvent[] = [
     title: "Event 5",
     subtitle: "This event is editable",
     start: new Date(
-      new Date(new Date(new Date().setHours(10)).setMinutes(30)).setDate(new Date().getDate() - 2)
+      new Date(new Date(new Date().setHours(1)).setMinutes(30)).setDate(new Date().getDate() - 2)
     ),
     end: new Date(
-      new Date(new Date(new Date().setHours(14)).setMinutes(0)).setDate(new Date().getDate() - 2)
+      new Date(new Date(new Date().setHours(3)).setMinutes(45)).setDate(new Date().getDate() - 2)
     ),
     admin_id: 2,
     editable: true,
@@ -67,7 +67,7 @@ export const EVENTS: ProcessedEvent[] = [
     end: new Date(new Date(new Date().setHours(23)).setMinutes(0)),
     admin_id: 2,
     allDay: true,
-    sx: { color: "purple" },
+    color: "#9c27b0",
   },
   {
     event_id: 7,

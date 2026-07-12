@@ -111,8 +111,10 @@ const WeekTable = ({
       return (
         <div
           key={event.event_id}
-          className="rs__multi_day"
           style={{
+            position: "absolute",
+            zIndex: 1,
+            textOverflow: "ellipsis",
             top: position * MULTI_SPACE + 45,
             width: `${99.9 * eventLength}%`,
             overflowX: "hidden",

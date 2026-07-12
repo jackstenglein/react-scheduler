@@ -127,14 +127,6 @@ export const TableGrid = styled("div")<{
     "&.rs__last_row": {
       borderBottomWidth: "0",
     },
-    "&.rs__header": {
-      "& > :first-of-type": {
-        padding: "2px 5px",
-      },
-    },
-    "&.rs__header__center": {
-      padding: "6px 0px",
-    },
     "&.rs__time": {
       display: "flex",
       alignItems: "center",
@@ -145,15 +137,6 @@ export const TableGrid = styled("div")<{
       [theme.breakpoints.down("sm")]: {
         writingMode: "vertical-rl",
       },
-    },
-    "& .rs__event__item": {
-      position: "absolute",
-      zIndex: 1,
-    },
-    "& .rs__multi_day": {
-      position: "absolute",
-      zIndex: 1,
-      textOverflow: "ellipsis",
     },
     "& .rs__block_col": {
       display: "block",

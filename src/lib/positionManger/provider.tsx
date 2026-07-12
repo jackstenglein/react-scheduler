@@ -16,8 +16,8 @@ type Props = {
 
 const setEventPositions = (events: ProcessedEvent[]) => {
   const slots: PositionManagerState["renderedSlots"][string] = {};
-  let position = 0;
   for (let i = 0; i < events.length; i++) {
+    let position = 0;
     const event = events[i];
     const eventLength = eachDayOfInterval({ start: event.start, end: event.end });
     for (let i = 0; i < eventLength.length; i++) {
@@ -32,9 +32,6 @@ const setEventPositions = (events: ProcessedEvent[]) => {
         slots[day] = { [event.event_id]: position };
       }
     }
-
-    // rest
-    position = 0;
   }
 
   return slots;
