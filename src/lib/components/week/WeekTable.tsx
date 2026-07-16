@@ -1,5 +1,5 @@
-import { Fragment } from "react";
-import useStore from "../../hooks/useStore";
+import { Fragment, useMemo } from "react";
+import useStore, { shallowEqual } from "../../hooks/useStore";
 import { TableGrid } from "../../styles/styles";
 import {
   convertEventTimeZone,
@@ -52,12 +52,34 @@ const WeekTable = ({
     translations,
     timeZone,
     direction,
-  } = useStore();
+  } = useStore(
+    (s) => ({
+      week: s.week,
+      events: s.events,
+      handleGotoDay: s.handleGotoDay,
+      resourceFields: s.resourceFields,
+      locale: s.locale,
+      hourFormat: s.hourFormat,
+      stickyNavigation: s.stickyNavigation,
+      translations: s.translations,
+      timeZone: s.timeZone,
+      direction: s.direction,
+    }),
+    shallowEqual
+  );
   const { startHour, endHour, step, cellRenderer, disableGoToDay } = week!;
   const { headersRef, bodyRef } = useSyncScroll();
   const hFormat = getHourFormat(hourFormat);
 
-  const allDayEvents = getAllDayEvents(events, daysList, timeZone);
+  const allDayEvents = useMemo(
+    () => getAllDayEvents(events, daysList, timeZone),
+    [events, daysList, timeZone]
+  );
+
+  const timedEventsByDay = useMemo(
+    () => daysList.map((date) => filterTodayEvents(resourcedEvents, date, timeZone)),
+    [daysList, resourcedEvents, timeZone]
+  );
 
   return (
     <>
@@ -180,7 +202,7 @@ const WeekTable = ({
                   {/* Events of each day - run once on the top hour column */}
                   {i === 0 && (
                     <TodayEvents
-                      todayEvents={filterTodayEvents(resourcedEvents, date, timeZone)}
+                      todayEvents={timedEventsByDay[ii]}
                       today={date}
                       minuteHeight={minutesHeight}
                       startHour={startHour}

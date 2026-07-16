@@ -1,9 +1,16 @@
 import { useMemo } from "react";
 import { ProcessedEvent } from "../types";
-import useStore from "./useStore";
+import useStore, { shallowEqual } from "./useStore";
 
 const useEventPermissions = (event: ProcessedEvent) => {
-  const { editable, deletable, draggable } = useStore();
+  const { editable, deletable, draggable } = useStore(
+    (s) => ({
+      editable: s.editable,
+      deletable: s.deletable,
+      draggable: s.draggable,
+    }),
+    shallowEqual
+  );
 
   const canEdit = useMemo(() => {
     // Priority control to event specific editable value

@@ -1,18 +1,29 @@
-import { Week } from "./views/Week";
-import { Navigation } from "./components/nav/Navigation";
-import Editor from "./views/Editor";
 import { CircularProgress, Typography } from "@mui/material";
-import { Month } from "./views/Month";
-import { Table, Wrapper } from "./styles/styles";
 import { forwardRef, useMemo } from "react";
-import useStore from "./hooks/useStore";
-import { SchedulerRef } from "./types";
+import { Navigation } from "./components/nav/Navigation";
+import useStore, { shallowEqual, useStoreApi } from "./hooks/useStore";
 import { PositionProvider } from "./positionManger/provider";
+import { Table, Wrapper } from "./styles/styles";
+import { SchedulerRef } from "./types";
+import Editor from "./views/Editor";
+import { Month } from "./views/Month";
+import { Week } from "./views/Week";
 
 const SchedulerComponent = forwardRef<SchedulerRef, unknown>(function SchedulerComponent(_, ref) {
-  const store = useStore();
+  const storeApi = useStoreApi();
   const { view, dialog, loading, loadingComponent, resourceViewMode, resources, translations } =
-    store;
+    useStore(
+      (s) => ({
+        view: s.view,
+        dialog: s.dialog,
+        loading: s.loading,
+        loadingComponent: s.loadingComponent,
+        resourceViewMode: s.resourceViewMode,
+        resources: s.resources,
+        translations: s.translations,
+      }),
+      shallowEqual
+    );
 
   const Views = useMemo(() => {
     switch (view) {
@@ -46,11 +57,13 @@ const SchedulerComponent = forwardRef<SchedulerRef, unknown>(function SchedulerC
       dialog={dialog ? 1 : 0}
       data-testid="rs-wrapper"
       ref={(el) => {
-        const calendarRef = ref as any;
+        const calendarRef = ref as React.MutableRefObject<SchedulerRef | null> | null;
         if (calendarRef) {
           calendarRef.current = {
-            el,
-            scheduler: store,
+            el: el as HTMLDivElement,
+            get scheduler() {
+              return storeApi.getState();
+            },
           };
         }
       }}

@@ -1,32 +1,28 @@
-# Post-cleanup benchmark comparison
+# Benchmark comparison notes
 
-Compared against `benchmarks/baseline.json` via `npm run bench:compare` after:
+## Baseline (pre-cleanup)
+See `BASELINE.md` / `baseline.json`.
 
-- Removing hot-path `console.log`s
-- Deleting unused week multi-day helpers
-- Non-mutating sorts / default merges
-- Stabilizing Week remote-fetch bounds
-- Fixing `useSyncScroll` effect deps
+## After cleanup PR
+Week render ~1.08–1.25× vs baseline (debug log removal).
 
-## Scheduler render vs baseline
+## After store-selector PR
 
-| Benchmark | Baseline hz | After hz | Delta |
-|-----------|-------------|----------|-------|
-| week view · 100 events | 3.87 | 4.20 | **1.08x faster** |
-| week view · 500 events | 0.61 | 0.76 | **1.25x faster** |
-| month view · 100 events | 1.53 | 1.52 | ~flat (noise) |
-| month view · 500 events | 0.20 | 0.18 | noisy (RME >100%) |
+Scheduler render (jsdom), vs original baseline:
 
-Week render improved as expected from removing debug logging in `WeekTable` / `PositionProvider`. Month 500 is too noisy for a firm claim (outliers up to 30s).
+| Benchmark | Baseline hz | After store split | Delta |
+|-----------|-------------|-------------------|-------|
+| week view · 100 events | 3.87 | **6.91** | **1.78×** |
+| week view · 500 events | 0.61 | **1.51** | **2.49×** |
+| month view · 100 events | 1.53 | 1.66 | ~1.09× |
+| month view · 500 events | 0.20 | 0.25 | noisy |
 
-## Helpers
-
-Pipeline benches stayed within ~±5% of baseline (sort copy overhead is negligible at this scale). Correctness fixes (non-mutating sorts/defaults, fetch stability) are covered by unit tests rather than hz gains.
-
-## Commands
+Changes that drive this:
+- External store + `useStore(selector)` / `shallowEqual`
+- Stable action identities (no fetch-dep churn)
+- Cells read `currentDragged` via `getState()` (no drag re-render storm)
+- `memo(EventItem)` + precomputed per-day timed events in `WeekTable`
 
 ```bash
-npm run bench              # run benches
-npm run bench:baseline     # overwrite baseline.json
-npm run bench:compare      # compare to baseline.json
+npm run bench:compare
 ```

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PositionManagerState, PositionContext } from "./context";
-import useStore from "../hooks/useStore";
+import useStore, { shallowEqual } from "../hooks/useStore";
 import { DefaultResource, FieldProps, ProcessedEvent, ResourceFields } from "../types";
 import {
   getResourcedEvents,
@@ -61,7 +61,16 @@ const setEventPositionsWithResources = (
 };
 
 export const PositionProvider = ({ children }: Props) => {
-  const { events, resources, resourceFields, fields, view } = useStore();
+  const { events, resources, resourceFields, fields, view } = useStore(
+    (s) => ({
+      events: s.events,
+      resources: s.resources,
+      resourceFields: s.resourceFields,
+      fields: s.fields,
+      view: s.view,
+    }),
+    shallowEqual
+  );
   const [state, set] = useState<PositionManagerState>({
     renderedSlots: setEventPositionsWithResources(events, resources, resourceFields, fields, view),
   });

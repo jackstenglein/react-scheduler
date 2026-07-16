@@ -3,7 +3,7 @@ import { startOfWeek, addDays, eachMinuteOfInterval, endOfDay, startOfDay, set }
 import { DefaultResource } from "../types";
 import { calcCellHeight, calcMinuteHeight, getResourcedEvents } from "../helpers/generals";
 import { WithResources } from "../components/common/WithResources";
-import useStore from "../hooks/useStore";
+import useStore, { shallowEqual } from "../hooks/useStore";
 import { WeekAgenda } from "./WeekAgenda";
 import WeekTable from "../components/week/WeekTable";
 
@@ -26,7 +26,24 @@ export const Week = () => {
     resourceFields,
     fields,
     agenda,
-  } = useStore();
+  } = useStore(
+    (s) => ({
+      view: s.view,
+      day: s.day,
+      week: s.week,
+      selectedDate: s.selectedDate,
+      height: s.height,
+      events: s.events,
+      getRemoteEvents: s.getRemoteEvents,
+      triggerLoading: s.triggerLoading,
+      handleState: s.handleState,
+      resources: s.resources,
+      resourceFields: s.resourceFields,
+      fields: s.fields,
+      agenda: s.agenda,
+    }),
+    shallowEqual
+  );
 
   const { weekStartOn, weekDays } = week!;
   let { startHour, endHour, step } = week!;
@@ -73,10 +90,7 @@ export const Week = () => {
     } finally {
       triggerLoading(false);
     }
-    // Omit handleState/triggerLoading: store recreates them each render.
-    // weekStart/weekEnd are memoized from selectedDate so this stays stable.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getRemoteEvents, weekEnd, weekStart]);
+  }, [getRemoteEvents, handleState, triggerLoading, weekEnd, weekStart]);
 
   useEffect(() => {
     if (getRemoteEvents) {

@@ -1,9 +1,9 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { addDays, eachWeekOfInterval, endOfMonth, startOfMonth } from "date-fns";
 import { DefaultResource } from "../types";
 import { getResourcedEvents, sortEventsByTheEarliest } from "../helpers/generals";
 import { WithResources } from "../components/common/WithResources";
-import useStore from "../hooks/useStore";
+import useStore, { shallowEqual } from "../hooks/useStore";
 import { MonthAgenda } from "./MonthAgenda";
 import MonthTable from "../components/month/MonthTable";
 
@@ -19,40 +19,58 @@ const Month = () => {
     resourceFields,
     fields,
     agenda,
-  } = useStore();
+  } = useStore(
+    (s) => ({
+      month: s.month,
+      selectedDate: s.selectedDate,
+      events: s.events,
+      getRemoteEvents: s.getRemoteEvents,
+      triggerLoading: s.triggerLoading,
+      handleState: s.handleState,
+      resources: s.resources,
+      resourceFields: s.resourceFields,
+      fields: s.fields,
+      agenda: s.agenda,
+    }),
+    shallowEqual
+  );
 
   const { weekStartOn, weekDays } = month!;
-  const monthStart = startOfMonth(selectedDate);
-  const monthEnd = endOfMonth(selectedDate);
-  const eachWeekStart = eachWeekOfInterval(
-    {
-      start: monthStart,
-      end: monthEnd,
-    },
-    { weekStartsOn: weekStartOn }
+  const eachWeekStart = useMemo(() => {
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+    return eachWeekOfInterval(
+      {
+        start: monthStart,
+        end: monthEnd,
+      },
+      { weekStartsOn: weekStartOn }
+    );
+  }, [selectedDate, weekStartOn]);
+  const daysList = useMemo(
+    () => weekDays.map((d) => addDays(eachWeekStart[0], d)),
+    [eachWeekStart, weekDays]
   );
-  const daysList = weekDays.map((d) => addDays(eachWeekStart[0], d));
 
   const fetchEvents = useCallback(async () => {
     try {
       triggerLoading(true);
       const start = eachWeekStart[0];
       const end = addDays(eachWeekStart[eachWeekStart.length - 1], daysList.length);
-      const events = await getRemoteEvents!({
+      const fetched = await getRemoteEvents!({
         start,
         end,
         view: "month",
       });
-      if (events && events?.length) {
-        handleState(events, "events");
+      if (fetched && fetched?.length) {
+        handleState(fetched, "events");
       }
     } catch (error) {
       throw error;
     } finally {
       triggerLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [daysList.length, getRemoteEvents]);
+  }, [daysList.length, eachWeekStart, getRemoteEvents, handleState, triggerLoading]);
 
   useEffect(() => {
     if (getRemoteEvents instanceof Function) {

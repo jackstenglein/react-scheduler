@@ -1,6 +1,6 @@
 import { DragEvent } from "react";
 import { alpha, useTheme } from "@mui/material";
-import useStore from "./useStore";
+import useStore, { shallowEqual, useStoreApi } from "./useStore";
 import { revertTimeZonedDate } from "../helpers/generals";
 
 interface Props {
@@ -10,15 +10,18 @@ interface Props {
   resourceVal: string | number;
 }
 export const useCellAttributes = ({ start, end, resourceKey, resourceVal }: Props) => {
-  const {
-    triggerDialog,
-    onCellClick,
-    onDrop,
-    currentDragged,
-    setCurrentDragged,
-    editable,
-    timeZone,
-  } = useStore();
+  const storeApi = useStoreApi();
+  const { triggerDialog, onCellClick, onDrop, setCurrentDragged, editable, timeZone } = useStore(
+    (s) => ({
+      triggerDialog: s.triggerDialog,
+      onCellClick: s.onCellClick,
+      onDrop: s.onDrop,
+      setCurrentDragged: s.setCurrentDragged,
+      editable: s.editable,
+      timeZone: s.timeZone,
+    }),
+    shallowEqual
+  );
   const theme = useTheme();
 
   return {
@@ -39,21 +42,22 @@ export const useCellAttributes = ({ start, end, resourceKey, resourceVal }: Prop
     },
     onDragOver: (e: DragEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      if (currentDragged) {
+      if (storeApi.getState().currentDragged) {
         e.currentTarget.style.backgroundColor = alpha(theme.palette.secondary.main, 0.3);
       }
     },
     onDragEnter: (e: DragEvent<HTMLButtonElement>) => {
-      if (currentDragged) {
+      if (storeApi.getState().currentDragged) {
         e.currentTarget.style.backgroundColor = alpha(theme.palette.secondary.main, 0.3);
       }
     },
     onDragLeave: (e: DragEvent<HTMLButtonElement>) => {
-      if (currentDragged) {
+      if (storeApi.getState().currentDragged) {
         e.currentTarget.style.backgroundColor = "";
       }
     },
     onDrop: (e: DragEvent<HTMLButtonElement>) => {
+      const currentDragged = storeApi.getState().currentDragged;
       if (currentDragged && currentDragged.event_id) {
         e.preventDefault();
         e.currentTarget.style.backgroundColor = "";

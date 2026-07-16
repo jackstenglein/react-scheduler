@@ -4,7 +4,7 @@ import { useTheme } from "@mui/material";
 import useStore from "./useStore";
 
 const useDragAttributes = (event: ProcessedEvent) => {
-  const { setCurrentDragged } = useStore();
+  const setCurrentDragged = useStore((s) => s.setCurrentDragged);
   const theme = useTheme();
   const oldBackground = useRef<string>(null);
 

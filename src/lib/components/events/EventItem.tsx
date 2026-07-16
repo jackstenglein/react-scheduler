@@ -1,10 +1,10 @@
-import { Fragment, MouseEvent, useCallback, useState } from "react";
+import { Fragment, memo, MouseEvent, useCallback, useState } from "react";
 import { Typography, ButtonBase, useTheme, Box, alpha, SxProps } from "@mui/material";
 import { format } from "date-fns";
 import { ProcessedEvent } from "../../types";
 import { EventItemPaper } from "../../styles/styles";
 import { differenceInDaysOmitTime, getHourFormat } from "../../helpers/generals";
-import useStore from "../../hooks/useStore";
+import useStore, { shallowEqual } from "../../hooks/useStore";
 import useDragAttributes from "../../hooks/useDragAttributes";
 import EventItemPopover from "./EventItemPopover";
 import useEventPermissions from "../../hooks/useEventPermissions";
@@ -47,12 +47,20 @@ const EventItem = (props: EventItemProps) => {
   );
 };
 
-export default EventItem;
+export default memo(EventItem);
 
 function EventText(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Element>) => void }) {
   const { event, triggerViewer } = props;
   const theme = useTheme();
-  const { onEventClick, disableViewer, locale, hourFormat } = useStore();
+  const { onEventClick, disableViewer, locale, hourFormat } = useStore(
+    (s) => ({
+      onEventClick: s.onEventClick,
+      disableViewer: s.disableViewer,
+      locale: s.locale,
+      hourFormat: s.hourFormat,
+    }),
+    shallowEqual
+  );
   const hFormat = getHourFormat(hourFormat);
   const dragProps = useDragAttributes(props.event);
   const { canDrag } = useEventPermissions(props.event);
@@ -121,7 +129,13 @@ function EventText(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Ele
 function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Element>) => void }) {
   const { event, triggerViewer, hasPrev, hasNext } = props;
   const theme = useTheme();
-  const { onEventClick, disableViewer } = useStore();
+  const { onEventClick, disableViewer } = useStore(
+    (s) => ({
+      onEventClick: s.onEventClick,
+      disableViewer: s.disableViewer,
+    }),
+    shallowEqual
+  );
   const dragProps = useDragAttributes(props.event);
   const { canDrag } = useEventPermissions(props.event);
 
@@ -188,7 +202,13 @@ function EventDetails({
   hasPrev?: boolean;
   hasNext?: boolean;
 }) {
-  const { locale, hourFormat } = useStore();
+  const { locale, hourFormat } = useStore(
+    (s) => ({
+      locale: s.locale,
+      hourFormat: s.hourFormat,
+    }),
+    shallowEqual
+  );
   const hFormat = getHourFormat(hourFormat);
   const hideDates = differenceInDaysOmitTime(event.start, event.end) <= 0 && event.allDay;
 

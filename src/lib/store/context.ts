@@ -1,5 +1,4 @@
 import { createContext } from "react";
-import { initialStore } from "./default";
-import { Store } from "./types";
+import { StoreApi } from "./createStore";
 
-export const StoreContext = createContext<Store>(initialStore);
+export const StoreContext = createContext<StoreApi | null>(null);
