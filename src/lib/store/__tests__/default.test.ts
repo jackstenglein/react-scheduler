@@ -89,4 +89,15 @@ describe("defaultProps", () => {
     const props = defaultProps({ selectedDate });
     expect(props.selectedDate).toBeInstanceOf(Date);
   });
+
+  it("does not mutate shared default view config across calls", () => {
+    defaultProps({
+      week: { startHour: 8, endHour: 20 } as WeekProps,
+      resourceFields: { idField: "owner", textField: "name" },
+    });
+    const props = defaultProps({});
+    expect(props.week?.startHour).toBe(9);
+    expect(props.week?.endHour).toBe(17);
+    expect(props.resourceFields.idField).toBe("assignee");
+  });
 });

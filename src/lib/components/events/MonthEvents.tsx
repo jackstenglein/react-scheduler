@@ -43,7 +43,6 @@ const MonthEvents = ({
 
   const renderEvents = useMemo(() => {
     const elements: React.ReactNode[] = [];
-    console.log("Rendering events for day: ", today, events);
 
     for (let i = 0; i < Math.min(events.length, LIMIT + 1); i++) {
       const event = convertEventTimeZone(events[i], timeZone);

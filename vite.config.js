@@ -16,6 +16,9 @@ export default defineConfig(() => ({
     setupFiles: ["./src/vitest.setup.ts"],
     include: ["src/**/*.vitest.{ts,tsx}"],
     css: true,
+    benchmark: {
+      include: ["src/**/*.bench.{ts,tsx}"],
+    },
   },
   plugins: [
     react(),

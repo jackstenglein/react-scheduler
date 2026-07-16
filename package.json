@@ -23,7 +23,10 @@
     "test:ci": "jest --ci",
     "test:components": "vitest run",
     "test:components:watch": "vitest",
-    "test:all": "npm run test && npm run test:components"
+    "test:all": "npm run test && npm run test:components",
+    "bench": "vitest bench --run",
+    "bench:baseline": "vitest bench --run --outputJson benchmarks/baseline.json",
+    "bench:compare": "vitest bench --run --compare benchmarks/baseline.json"
   },
   "exports": {
     "./types": {

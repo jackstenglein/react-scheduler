@@ -23,7 +23,7 @@ const useSyncScroll = () => {
       header?.removeEventListener("scroll", handleScroll);
       body?.removeEventListener("scroll", handleScroll);
     };
-  });
+  }, []);
 
   return { headersRef, bodyRef };
 };

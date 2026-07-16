@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { startOfWeek, addDays, eachMinuteOfInterval, endOfDay, startOfDay, set } from "date-fns";
 import { DefaultResource } from "../types";
 import { calcCellHeight, calcMinuteHeight, getResourcedEvents } from "../helpers/generals";
@@ -36,10 +36,13 @@ export const Week = () => {
     step = day!.step;
   }
 
-  const _weekStart = startOfWeek(selectedDate, { weekStartsOn: weekStartOn });
-  const daysList = weekDays.map((d) => addDays(_weekStart, d));
-  const weekStart = startOfDay(daysList[0]);
-  const weekEnd = endOfDay(daysList[daysList.length - 1]);
+  const daysList = useMemo(() => {
+    const weekStartDate = startOfWeek(selectedDate, { weekStartsOn: weekStartOn });
+    return weekDays.map((d) => addDays(weekStartDate, d));
+  }, [selectedDate, weekDays, weekStartOn]);
+
+  const weekStart = useMemo(() => startOfDay(daysList[0]), [daysList]);
+  const weekEnd = useMemo(() => endOfDay(daysList[daysList.length - 1]), [daysList]);
 
   const START_TIME = set(selectedDate, { hours: startHour, minutes: 0, seconds: 0 });
   const END_TIME = set(selectedDate, { hours: endHour, minutes: -step, seconds: 0 });
@@ -57,20 +60,23 @@ export const Week = () => {
     try {
       triggerLoading(true);
 
-      const events = await getRemoteEvents?.({
+      const fetched = await getRemoteEvents?.({
         start: weekStart,
         end: weekEnd,
         view: "week",
       });
-      if (Array.isArray(events)) {
-        handleState(events, "events");
+      if (Array.isArray(fetched)) {
+        handleState(fetched, "events");
       }
     } catch (error) {
       throw error;
     } finally {
       triggerLoading(false);
     }
-  }, [getRemoteEvents, triggerLoading, handleState, weekEnd, weekStart]);
+    // Omit handleState/triggerLoading: store recreates them each render.
+    // weekStart/weekEnd are memoized from selectedDate so this stays stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getRemoteEvents, weekEnd, weekStart]);
 
   useEffect(() => {
     if (getRemoteEvents) {

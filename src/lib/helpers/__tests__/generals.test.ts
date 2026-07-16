@@ -201,6 +201,15 @@ describe("sortEventsByTheLengthest", () => {
     const sorted = sortEventsByTheLengthest([short, long, multiday]);
     expect(sorted.map((e) => e.event_id)).toEqual([3, 1, 2]);
   });
+
+  it("does not mutate the input array", () => {
+    const short = makeEvent({ event_id: 1, end: new Date(2025, 0, 15, 11, 0) });
+    const multiday = makeEvent({ event_id: 3, end: new Date(2025, 0, 16, 14, 0) });
+    const input = [short, multiday];
+    const originalOrder = input.map((e) => e.event_id);
+    sortEventsByTheLengthest(input);
+    expect(input.map((e) => e.event_id)).toEqual(originalOrder);
+  });
 });
 
 describe("sortEventsByTheEarliest", () => {
@@ -233,6 +242,22 @@ describe("sortEventsByTheEarliest", () => {
     });
     const sorted = sortEventsByTheEarliest([later, earlier]);
     expect(sorted.map((e) => e.event_id)).toEqual([2, 1]);
+  });
+
+  it("does not mutate the input array", () => {
+    const later = makeEvent({
+      event_id: 1,
+      start: new Date(2025, 0, 15, 14, 0),
+      end: new Date(2025, 0, 15, 15, 0),
+    });
+    const earlier = makeEvent({
+      event_id: 2,
+      start: new Date(2025, 0, 15, 9, 0),
+      end: new Date(2025, 0, 15, 10, 0),
+    });
+    const input = [later, earlier];
+    sortEventsByTheEarliest(input);
+    expect(input.map((e) => e.event_id)).toEqual([1, 2]);
   });
 });
 

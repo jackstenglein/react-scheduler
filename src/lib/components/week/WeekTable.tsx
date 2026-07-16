@@ -1,28 +1,23 @@
-import { Fragment, useMemo } from "react";
+import { Fragment } from "react";
 import useStore from "../../hooks/useStore";
 import { TableGrid } from "../../styles/styles";
 import {
   convertEventTimeZone,
   differenceInDaysOmitTime,
-  filterMultiDaySlot,
   filterTodayEvents,
   getHourFormat,
 } from "../../helpers/generals";
-import { MULTI_DAY_EVENT_HEIGHT } from "../../helpers/constants";
 import { DefaultResource, ProcessedEvent } from "../../types";
 import useSyncScroll from "../../hooks/useSyncScroll";
 import {
   addMinutes,
   endOfDay,
   format,
-  isAfter,
   isBefore,
-  isSameDay,
   isToday,
   isWithinInterval,
   startOfDay,
 } from "date-fns";
-import usePosition from "../../positionManger/usePosition";
 import EventItem from "../events/EventItem";
 import { Box, Stack, Typography } from "@mui/material";
 import TodayEvents from "../events/TodayEvents";
@@ -50,88 +45,19 @@ const WeekTable = ({
     week,
     events,
     handleGotoDay,
-    resources,
     resourceFields,
-    resourceViewMode,
-    direction,
     locale,
     hourFormat,
-    timeZone,
     stickyNavigation,
     translations,
+    timeZone,
+    direction,
   } = useStore();
   const { startHour, endHour, step, cellRenderer, disableGoToDay } = week!;
-  const { renderedSlots } = usePosition();
   const { headersRef, bodyRef } = useSyncScroll();
-  const MULTI_SPACE = MULTI_DAY_EVENT_HEIGHT;
-  const weekStart = startOfDay(daysList[0]);
-  const weekEnd = endOfDay(daysList[daysList.length - 1]);
   const hFormat = getHourFormat(hourFormat);
 
   const allDayEvents = getAllDayEvents(events, daysList, timeZone);
-
-  // Equalizing multi-day section height except in resource/tabs mode
-  const _headerHeight = useMemo(() => {
-    const shouldEqualize = resources.length && resourceViewMode === "default";
-    const allWeekMulti = filterMultiDaySlot(
-      shouldEqualize ? events : resourcedEvents,
-      daysList,
-      timeZone,
-      true
-    );
-    return MULTI_SPACE * allWeekMulti.length + 45;
-  }, [
-    MULTI_SPACE,
-    daysList,
-    events,
-    resourceViewMode,
-    resourcedEvents,
-    resources.length,
-    timeZone,
-  ]);
-
-  const _renderMultiDayEvents = (
-    events: ProcessedEvent[],
-    today: Date,
-    resource?: DefaultResource
-  ) => {
-    const isFirstDayInWeek = isSameDay(weekStart, today);
-    const allWeekMulti = filterMultiDaySlot(events, daysList, timeZone);
-
-    const multiDays = allWeekMulti
-      .filter((e) => (isBefore(e.start, weekStart) ? isFirstDayInWeek : isSameDay(e.start, today)))
-      .sort((a, b) => b.end.getTime() - a.end.getTime());
-    return multiDays.map((event) => {
-      const hasPrev = isBefore(startOfDay(event.start), weekStart);
-      const hasNext = isAfter(endOfDay(event.end), weekEnd);
-      const eventLength =
-        differenceInDaysOmitTime(hasPrev ? weekStart : event.start, hasNext ? weekEnd : event.end) +
-        1;
-
-      const day = format(today, "yyyy-MM-dd");
-      const resourceId = resource ? resource[resourceFields.idField] : "all";
-      const rendered = renderedSlots?.[resourceId]?.[day];
-      const position = rendered?.[event.event_id] || 0;
-
-      return (
-        <div
-          key={event.event_id}
-          style={{
-            position: "absolute",
-            zIndex: 1,
-            textOverflow: "ellipsis",
-            top: position * MULTI_SPACE + 45,
-            width: `${99.9 * eventLength}%`,
-            overflowX: "hidden",
-          }}
-        >
-          <EventItem event={event} hasPrev={hasPrev} hasNext={hasNext} multiday />
-        </div>
-      );
-    });
-  };
-
-  console.log(_headerHeight, _renderMultiDayEvents);
 
   return (
     <>
@@ -314,6 +240,5 @@ function getAllDayEvents(
       }
     }
   }
-  console.log("allDayEvents:", result);
   return result;
 }

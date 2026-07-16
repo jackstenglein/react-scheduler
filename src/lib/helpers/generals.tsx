@@ -196,7 +196,7 @@ export const filterTodayAgendaEvents = (events: ProcessedEvent[], today: Date) =
 };
 
 export const sortEventsByTheLengthest = (events: ProcessedEvent[]) => {
-  return events.sort((a, b) => {
+  return [...events].sort((a, b) => {
     const aDays = differenceInDays(a.end, a.start);
     const bDays = differenceInDays(b.end, b.start);
     if (aDays !== bDays) {
@@ -207,7 +207,7 @@ export const sortEventsByTheLengthest = (events: ProcessedEvent[]) => {
 };
 
 export const sortEventsByTheEarliest = (events: ProcessedEvent[]) => {
-  return events.sort((a, b) => {
+  return [...events].sort((a, b) => {
     const isMulti = a.allDay || differenceInDaysOmitTime(a.start, a.end) > 0;
     return isMulti ? -1 : a.start.getTime() - b.start.getTime();
   });
