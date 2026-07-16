@@ -1,28 +1,16 @@
 import { Fragment, useMemo } from "react";
 import useStore, { shallowEqual } from "../../hooks/useStore";
 import { TableGrid } from "../../styles/styles";
-import {
-  convertEventTimeZone,
-  differenceInDaysOmitTime,
-  filterTodayEvents,
-  getHourFormat,
-} from "../../helpers/generals";
+import { getHourFormat } from "../../helpers/generals";
 import { DefaultResource, ProcessedEvent } from "../../types";
 import useSyncScroll from "../../hooks/useSyncScroll";
-import {
-  addMinutes,
-  endOfDay,
-  format,
-  isBefore,
-  isToday,
-  isWithinInterval,
-  startOfDay,
-} from "date-fns";
+import { addMinutes, endOfDay, format, isBefore, isToday, startOfDay } from "date-fns";
 import EventItem from "../events/EventItem";
 import { Box, Stack, Typography } from "@mui/material";
 import TodayEvents from "../events/TodayEvents";
 import Cell from "../common/Cell";
 import { DateButton } from "../common/DateButton";
+import { computeWeekLayout } from "../../layout/eventLayout";
 
 type Props = {
   daysList: Date[];
@@ -71,14 +59,21 @@ const WeekTable = ({
   const { headersRef, bodyRef } = useSyncScroll();
   const hFormat = getHourFormat(hourFormat);
 
-  const allDayEvents = useMemo(
-    () => getAllDayEvents(events, daysList, timeZone),
-    [events, daysList, timeZone]
-  );
-
-  const timedEventsByDay = useMemo(
-    () => daysList.map((date) => filterTodayEvents(resourcedEvents, date, timeZone)),
-    [daysList, resourcedEvents, timeZone]
+  const dayLayouts = useMemo(
+    () =>
+      computeWeekLayout({
+        allDaySourceEvents: events,
+        timedSourceEvents: resourcedEvents,
+        daysList,
+        timeZone,
+        timedLayout: {
+          startHour,
+          endHour,
+          minuteHeight: minutesHeight,
+          direction,
+        },
+      }),
+    [events, resourcedEvents, daysList, timeZone, startHour, endHour, minutesHeight, direction]
   );
 
   return (
@@ -121,7 +116,7 @@ const WeekTable = ({
           </Typography>
         </Box>
 
-        {daysList.map((date, i) => (
+        {dayLayouts.map(({ date, allDay }, i) => (
           <Box
             key={i}
             sx={{
@@ -146,7 +141,7 @@ const WeekTable = ({
             </Box>
 
             <Stack sx={{ gap: 0.25 }}>
-              {allDayEvents[i].map((event) => (
+              {allDay.map((event) => (
                 <EventItem
                   key={event.event_id}
                   event={event}
@@ -190,7 +185,7 @@ const WeekTable = ({
               )}
             </Box>
 
-            {daysList.map((date, ii) => {
+            {dayLayouts.map(({ date, timed, timedPlacements }, ii) => {
               const start = new Date(`${format(date, "yyyy/MM/dd")} ${format(h, hFormat)}`);
               const end = addMinutes(start, step);
               const field = resourceFields.idField;
@@ -199,10 +194,10 @@ const WeekTable = ({
                   key={ii}
                   className={`rs__cell ${isToday(date) ? "rs__today_cell" : ""} ${i === hours.length - 1 ? "rs__last_row" : ""}`}
                 >
-                  {/* Events of each day - run once on the top hour column */}
                   {i === 0 && (
                     <TodayEvents
-                      todayEvents={timedEventsByDay[ii]}
+                      todayEvents={timed}
+                      placements={timedPlacements}
                       today={date}
                       minuteHeight={minutesHeight}
                       startHour={startHour}
@@ -232,35 +227,3 @@ const WeekTable = ({
 };
 
 export default WeekTable;
-
-/**
- * Returns a 2-dimensional list of ProcessedEvents that run all day. Events are
- * included only in the list corresponding to their start day.
- * @param events The events to check for all day events.
- * @param daysList The list of days to check.
- * @param timeZone The timeZone to convert events to.
- * @returns A 2D list of events, where the first dimensions corresponds to daysList.
- */
-function getAllDayEvents(
-  events: ProcessedEvent[],
-  daysList: Date[],
-  timeZone?: string
-): ProcessedEvent[][] {
-  const result: ProcessedEvent[][] = daysList.map(() => []);
-  for (let event of events) {
-    event = convertEventTimeZone(event, timeZone);
-    const allDay = event.allDay || differenceInDaysOmitTime(event.start, event.end) > 0;
-    if (!allDay) {
-      continue;
-    }
-
-    for (let i = 0; i < daysList.length; i++) {
-      const day = daysList[i];
-      if (isWithinInterval(day, { start: startOfDay(event.start), end: endOfDay(event.end) })) {
-        result[i].push(event);
-        break;
-      }
-    }
-  }
-  return result;
-}

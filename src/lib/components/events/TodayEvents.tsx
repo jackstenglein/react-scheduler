@@ -1,7 +1,7 @@
-import { differenceInMinutes } from "date-fns";
 import { Fragment } from "react";
-import { isTimeZonedToday, traversCrossingEvents } from "../../helpers/generals";
+import { isTimeZonedToday } from "../../helpers/generals";
 import { ProcessedEvent } from "../../types";
+import { layoutTimedEvents, TimedEventPlacement } from "../../layout/eventLayout";
 import CurrentTimeBar from "./CurrentTimeBar";
 import EventItem from "./EventItem";
 
@@ -14,7 +14,10 @@ interface TodayEventsProps {
   minuteHeight: number;
   direction: "rtl" | "ltr";
   timeZone?: string;
+  /** Optional precomputed placements; computed from todayEvents when omitted */
+  placements?: TimedEventPlacement[];
 }
+
 const TodayEvents = ({
   todayEvents,
   today,
@@ -24,8 +27,13 @@ const TodayEvents = ({
   minuteHeight,
   direction,
   timeZone,
+  placements: placementsProp,
 }: TodayEventsProps) => {
-  const crossingIds: Array<number | string> = [];
+  const placements =
+    placementsProp ??
+    layoutTimedEvents(todayEvents, { startHour, endHour, minuteHeight, direction });
+
+  const insetKey = direction === "rtl" ? "right" : "left";
 
   return (
     <Fragment>
@@ -39,43 +47,21 @@ const TodayEvents = ({
         />
       )}
 
-      {todayEvents.map((event, i) => {
-        const maxHeight = (endHour * 60 - startHour * 60) * minuteHeight;
-        const eventHeight = differenceInMinutes(event.end, event.start) * minuteHeight;
-        const height = Math.min(eventHeight, maxHeight);
-
-        /** Calculate top space */
-        const calendarStartInMins = startHour * 60;
-        const eventStartInMins = event.start.getHours() * 60 + event.start.getMinutes();
-        const minutesFromTop = Math.max(eventStartInMins - calendarStartInMins, 0);
-        const top = minutesFromTop * minuteHeight;
-
-        const crossingEvents = traversCrossingEvents(todayEvents, event);
-        const alreadyRendered = crossingEvents.filter((e) => crossingIds.includes(e.event_id));
-        crossingIds.push(event.event_id);
-
-        return (
-          <div
-            key={`${event.event_id}/${event.recurrenceId || ""}`}
-            style={{
-              position: "absolute",
-              height,
-              top,
-              width:
-                alreadyRendered.length > 0
-                  ? `calc(100% - ${100 - 98 / (alreadyRendered.length + 1)}%)`
-                  : "98%", // Leave some space to click cell
-              zIndex: todayEvents.length + i,
-              [direction === "rtl" ? "right" : "left"]:
-                alreadyRendered.length > 0
-                  ? `${(100 / (crossingEvents.length + 1)) * alreadyRendered.length}%`
-                  : "",
-            }}
-          >
-            <EventItem event={event} />
-          </div>
-        );
-      })}
+      {placements.map((placement) => (
+        <div
+          key={`${placement.event.event_id}/${placement.event.recurrenceId || ""}`}
+          style={{
+            position: "absolute",
+            height: placement.height,
+            top: placement.top,
+            width: placement.width,
+            zIndex: placement.zIndex,
+            [insetKey]: placement.horizontalOffset,
+          }}
+        >
+          <EventItem event={placement.event} />
+        </div>
+      ))}
     </Fragment>
   );
 };

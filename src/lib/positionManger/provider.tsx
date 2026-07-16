@@ -1,63 +1,10 @@
 import { useEffect, useState } from "react";
 import { PositionManagerState, PositionContext } from "./context";
 import useStore, { shallowEqual } from "../hooks/useStore";
-import { DefaultResource, FieldProps, ProcessedEvent, ResourceFields } from "../types";
-import {
-  getResourcedEvents,
-  sortEventsByTheEarliest,
-  sortEventsByTheLengthest,
-} from "../helpers/generals";
-import { eachDayOfInterval, format } from "date-fns";
-import { View } from "../components/nav/Navigation";
+import { computeRenderedSlots } from "../layout/eventLayout";
 
 type Props = {
   children: React.ReactNode;
-};
-
-const setEventPositions = (events: ProcessedEvent[]) => {
-  const slots: PositionManagerState["renderedSlots"][string] = {};
-  for (let i = 0; i < events.length; i++) {
-    let position = 0;
-    const event = events[i];
-    const eventLength = eachDayOfInterval({ start: event.start, end: event.end });
-    for (let i = 0; i < eventLength.length; i++) {
-      const day = format(eventLength[i], "yyyy-MM-dd");
-      if (slots[day]) {
-        const positions = Object.values(slots[day]);
-        while (positions.includes(position)) {
-          position += 1;
-        }
-        slots[day][event.event_id] = position;
-      } else {
-        slots[day] = { [event.event_id]: position };
-      }
-    }
-  }
-
-  return slots;
-};
-
-const setEventPositionsWithResources = (
-  events: ProcessedEvent[],
-  resources: DefaultResource[],
-  rFields: ResourceFields,
-  fields: FieldProps[],
-  view: View
-) => {
-  const sorted =
-    view === "month" ? sortEventsByTheLengthest(events) : sortEventsByTheEarliest(events);
-  const slots: PositionManagerState["renderedSlots"] = {};
-
-  if (resources.length) {
-    for (const resource of resources) {
-      const resourcedEvents = getResourcedEvents(sorted, resource, rFields, fields);
-      const positions = setEventPositions(resourcedEvents);
-      slots[resource[rFields.idField]] = positions;
-    }
-  } else {
-    slots.all = setEventPositions(sorted);
-  }
-  return slots;
 };
 
 export const PositionProvider = ({ children }: Props) => {
@@ -72,19 +19,13 @@ export const PositionProvider = ({ children }: Props) => {
     shallowEqual
   );
   const [state, set] = useState<PositionManagerState>({
-    renderedSlots: setEventPositionsWithResources(events, resources, resourceFields, fields, view),
+    renderedSlots: computeRenderedSlots(events, resources, resourceFields, fields, view),
   });
 
   useEffect(() => {
     set((prev) => ({
       ...prev,
-      renderedSlots: setEventPositionsWithResources(
-        events,
-        resources,
-        resourceFields,
-        fields,
-        view
-      ),
+      renderedSlots: computeRenderedSlots(events, resources, resourceFields, fields, view),
     }));
   }, [events, fields, resourceFields, resources, view]);
 
