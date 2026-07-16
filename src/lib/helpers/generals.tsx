@@ -12,7 +12,7 @@ import {
   startOfDay,
   subMinutes,
 } from "date-fns";
-import { View } from "../components/nav/Navigation";
+import { View } from "../types";
 import {
   DefaultResource,
   FieldProps,
@@ -276,14 +276,48 @@ export const convertEventTimeZone = (
 };
 
 export const getTimeZonedDate = (date: Date, timeZone?: string) => {
+  if (!timeZone) {
+    return new Date(date.getTime());
+  }
+
+  const dtf = getDateTimeFormat(timeZone);
+  const parts = dtf.formatToParts(date);
+  const values: Record<string, string> = {};
+  for (const part of parts) {
+    if (part.type !== "literal") {
+      values[part.type] = part.value;
+    }
+  }
+
   return new Date(
-    new Intl.DateTimeFormat("en-US", {
-      dateStyle: "short",
-      timeStyle: "medium",
-      timeZone,
-    }).format(date)
+    Number(values.year),
+    Number(values.month) - 1,
+    Number(values.day),
+    Number(values.hour),
+    Number(values.minute),
+    Number(values.second || "0")
   );
 };
+
+const dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
+
+function getDateTimeFormat(timeZone: string) {
+  let dtf = dateTimeFormatCache.get(timeZone);
+  if (!dtf) {
+    dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    });
+    dateTimeFormatCache.set(timeZone, dtf);
+  }
+  return dtf;
+}
 
 /**
  * Performs the reverse of getTimeZonedDate, IE: the given date is assumed

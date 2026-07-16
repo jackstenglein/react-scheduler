@@ -3,10 +3,11 @@ import { DateCalendarProps } from "@mui/x-date-pickers";
 import { Locale } from "date-fns";
 import { DragEvent } from "react";
 import { SelectOption } from "./components/inputs/SelectInput";
-import { View } from "./components/nav/Navigation";
 import { Store } from "./store/types";
 import { StateItem } from "./views/Editor";
 import type { RRule } from "rrule";
+
+export type View = "month" | "week" | "day" | "agenda";
 
 export type DayHours =
   | 0

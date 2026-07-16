@@ -13,7 +13,7 @@ import EventItem from "./EventItem";
 import { MONTH_NUMBER_HEIGHT, MULTI_DAY_EVENT_HEIGHT } from "../../helpers/constants";
 import { convertEventTimeZone, differenceInDaysOmitTime } from "../../helpers/generals";
 import useStore from "../../hooks/useStore";
-import usePosition from "../../positionManger/usePosition";
+import usePosition from "../../positionManager/usePosition";
 
 interface MonthEventProps {
   events: RecurrenceEvent[];
@@ -116,7 +116,7 @@ const MonthEvents = ({
           <EventItem
             variant="text"
             event={event}
-            showdate={false}
+            showDate={false}
             multiday={differenceInDaysOmitTime(event.start, event.end) > 0}
             hasPrev={fromPrevWeek}
             hasNext={toNextWeek}

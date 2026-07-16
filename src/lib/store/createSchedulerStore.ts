@@ -4,7 +4,7 @@ import { defaultProps, initialStore } from "./default";
 import { Store } from "./types";
 import { arraytizeFieldVal, getAvailableViews } from "../helpers/generals";
 import { addMinutes, differenceInMinutes, isEqual } from "date-fns";
-import { View } from "../components/nav/Navigation";
+import { View } from "../types";
 import { createStoreApi, StoreApi } from "./createStore";
 
 export function createSchedulerStore(

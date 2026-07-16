@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { RRule } from "rrule";
 import {
   arraytizeFieldVal,
@@ -18,9 +19,9 @@ import {
   sortEventsByTheEarliest,
   sortEventsByTheLengthest,
   traversCrossingEvents,
-} from "../generals";
-import { FieldProps, ProcessedEvent, SchedulerProps } from "../../types";
-import { SchedulerState } from "../../store/types";
+} from "./generals";
+import { FieldProps, ProcessedEvent, SchedulerProps } from "../types";
+import { SchedulerState } from "../store/types";
 
 const makeEvent = (overrides: Partial<ProcessedEvent> = {}): ProcessedEvent => ({
   event_id: 1,
@@ -424,7 +425,13 @@ describe("getHourFormat", () => {
 });
 
 describe("timezone helpers", () => {
-  const date = new Date(2025, 0, 15, 10, 30, 0);
+  const date = new Date(Date.UTC(2025, 0, 15, 15, 30, 0));
+
+  it("returns a Date when no timezone is provided", () => {
+    const result = getTimeZonedDate(date);
+    expect(result).toBeInstanceOf(Date);
+    expect(result.getTime()).toBe(date.getTime());
+  });
 
   it("returns the same date when no timezone is provided to revertTimeZonedDate", () => {
     expect(revertTimeZonedDate(date)).toBe(date);
@@ -435,7 +442,12 @@ describe("timezone helpers", () => {
     expect(result.convertedTz).toBe(true);
   });
 
-  it("getTimeZonedDate returns a Date instance", () => {
-    expect(getTimeZonedDate(date)).toBeInstanceOf(Date);
+  it("projects wall-clock fields into the target timezone", () => {
+    const utc = getTimeZonedDate(date, "UTC");
+    expect(utc.getFullYear()).toBe(2025);
+    expect(utc.getMonth()).toBe(0);
+    expect(utc.getDate()).toBe(15);
+    expect(utc.getHours()).toBe(15);
+    expect(utc.getMinutes()).toBe(30);
   });
 });

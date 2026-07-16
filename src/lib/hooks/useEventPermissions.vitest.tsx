@@ -1,8 +1,9 @@
+import { describe, expect, it } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { ReactNode } from "react";
-import useEventPermissions from "../useEventPermissions";
-import { StoreProvider } from "../../store/provider";
-import { ProcessedEvent } from "../../types";
+import useEventPermissions from "./useEventPermissions";
+import { StoreProvider } from "../store/provider";
+import { ProcessedEvent } from "../types";
 
 const makeEvent = (overrides: Partial<ProcessedEvent> = {}): ProcessedEvent => ({
   event_id: 1,

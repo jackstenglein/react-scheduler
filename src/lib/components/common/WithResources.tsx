@@ -2,14 +2,21 @@ import { useMemo } from "react";
 import { DefaultResource } from "../../types";
 import { ResourceHeader } from "./ResourceHeader";
 import { ButtonTabProps, ButtonTabs } from "./Tabs";
-import useStore from "../../hooks/useStore";
+import useStore, { shallowEqual } from "../../hooks/useStore";
 import { Box, useTheme } from "@mui/material";
 
 interface WithResourcesProps {
   renderChildren(resource: DefaultResource): React.ReactNode;
 }
 const WithResources = ({ renderChildren }: WithResourcesProps) => {
-  const { resources, resourceFields, resourceViewMode } = useStore();
+  const { resources, resourceFields, resourceViewMode } = useStore(
+    (s) => ({
+      resources: s.resources,
+      resourceFields: s.resourceFields,
+      resourceViewMode: s.resourceViewMode,
+    }),
+    shallowEqual
+  );
   const theme = useTheme();
 
   if (resourceViewMode === "tabs") {
@@ -30,17 +37,13 @@ const WithResources = ({ renderChildren }: WithResourcesProps) => {
             >
               <ResourceHeader resource={res} />
             </Box>
-            <Box
-              //
-              sx={{ width: "100%", overflowX: "auto" }}
-            >
-              {renderChildren(res)}
-            </Box>
+            <Box sx={{ width: "100%", overflowX: "auto" }}>{renderChildren(res)}</Box>
           </Box>
         ))}
       </>
     );
   } else {
+    // default: all resources stacked (intentional multi-calendar layout)
     return (
       <>
         {resources.map((res: DefaultResource, i: number) => (
@@ -55,13 +58,23 @@ const WithResources = ({ renderChildren }: WithResourcesProps) => {
 };
 
 const ResourcesTabTables = ({ renderChildren }: WithResourcesProps) => {
-  const { resources, resourceFields, selectedTab, handleState, onResourceChange } = useStore();
+  const { resources, resourceFields, selectedTab, handleState, onResourceChange } = useStore(
+    (s) => ({
+      resources: s.resources,
+      resourceFields: s.resourceFields,
+      selectedTab: s.selectedTab,
+      handleState: s.handleState,
+      onResourceChange: s.onResourceChange,
+    }),
+    shallowEqual
+  );
 
   const tabs: ButtonTabProps[] = resources.map((res) => {
     return {
       id: res[resourceFields.idField],
       label: <ResourceHeader resource={res} />,
-      component: <>{renderChildren(res)}</>,
+      // Lazy: only the active tab mounts a calendar (see ButtonTabs).
+      render: () => renderChildren(res),
     };
   });
 
@@ -81,7 +94,6 @@ const ResourcesTabTables = ({ renderChildren }: WithResourcesProps) => {
       return firstId;
     }
 
-    // Make sure current selected id is within the resources array
     const idx = resources.findIndex((re) => re[resourceFields.idField] === selectedTab);
     if (idx < 0) {
       return firstId;

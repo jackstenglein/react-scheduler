@@ -7,8 +7,9 @@ import useStore from "../../hooks/useStore";
 import { NavigationDiv } from "../../styles/styles";
 import { getTimeZonedDate } from "../../helpers/generals";
 import { ExpandMore } from "@mui/icons-material";
+import { View } from "../../types";
 
-export type View = "month" | "week" | "day" | "agenda";
+export type { View };
 
 const Navigation = () => {
   const {

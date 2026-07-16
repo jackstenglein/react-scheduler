@@ -9,7 +9,10 @@ interface TabPanelProps {
 }
 function TabPanel(props: TabPanelProps) {
   const { children, value, index } = props;
-  return value === index ? <>{children}</> : <></>;
+  if (value !== index) {
+    return null;
+  }
+  return <>{children}</>;
 }
 
 function a11yProps(index: string | number) {
@@ -63,7 +66,10 @@ const StyledTaps = styled("div")(({ theme }) => ({
 export type ButtonTabProps = {
   id: string | number;
   label: string | React.ReactNode;
-  component: React.ReactNode;
+  /** Eager content (prefer `render` for expensive panels) */
+  component?: React.ReactNode;
+  /** Lazy content — only invoked for the active tab */
+  render?: () => React.ReactNode;
 };
 interface ButtonTabsProps {
   tabs: ButtonTabProps[];
@@ -103,14 +109,11 @@ const ButtonTabs = ({
           />
         ))}
       </Tabs>
-      {tabs.map(
-        (t: ButtonTabProps, i: number) =>
-          t.component && (
-            <TabPanel key={i} value={tab} index={t.id}>
-              {t.component}
-            </TabPanel>
-          )
-      )}
+      {tabs.map((t: ButtonTabProps, i: number) => (
+        <TabPanel key={i} value={tab} index={t.id}>
+          {t.render ? t.render() : t.component}
+        </TabPanel>
+      ))}
     </StyledTaps>
   );
 };

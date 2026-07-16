@@ -31,6 +31,8 @@ const WeekTable = ({
 }: Props) => {
   const {
     week,
+    day,
+    view,
     events,
     handleGotoDay,
     resourceFields,
@@ -43,6 +45,8 @@ const WeekTable = ({
   } = useStore(
     (s) => ({
       week: s.week,
+      day: s.day,
+      view: s.view,
       events: s.events,
       handleGotoDay: s.handleGotoDay,
       resourceFields: s.resourceFields,
@@ -56,6 +60,7 @@ const WeekTable = ({
     shallowEqual
   );
   const { startHour, endHour, step, cellRenderer, disableGoToDay } = week!;
+  const hourRenderer = view === "day" ? day?.hourRenderer : week?.hourRenderer;
   const { headersRef, bodyRef } = useSyncScroll();
   const hFormat = getHourFormat(hourFormat);
 
@@ -173,14 +178,18 @@ const WeekTable = ({
             >
               {i > 0 && (
                 <span>
-                  <Typography
-                    component="p"
-                    variant="caption"
-                    color="textSecondary"
-                    sx={{ position: "relative", top: "-50%" }}
-                  >
-                    {format(h, hFormat, { locale })}
-                  </Typography>
+                  {typeof hourRenderer === "function" ? (
+                    hourRenderer(format(h, hFormat, { locale }))
+                  ) : (
+                    <Typography
+                      component="p"
+                      variant="caption"
+                      color="textSecondary"
+                      sx={{ position: "relative", top: "-50%" }}
+                    >
+                      {format(h, hFormat, { locale })}
+                    </Typography>
+                  )}
                 </span>
               )}
             </Box>

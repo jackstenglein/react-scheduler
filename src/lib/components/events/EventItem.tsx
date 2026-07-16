@@ -14,7 +14,7 @@ interface EventItemProps {
   multiday?: boolean;
   hasPrev?: boolean;
   hasNext?: boolean;
-  showdate?: boolean;
+  showDate?: boolean;
   variant?: "paper" | "text";
   sx?: SxProps;
 }
@@ -22,6 +22,7 @@ interface EventItemProps {
 const EventItem = (props: EventItemProps) => {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const eventRenderer = useStore((s) => s.eventRenderer);
 
   const triggerViewer = useCallback(
     (el?: MouseEvent<Element>) => {
@@ -32,6 +33,41 @@ const EventItem = (props: EventItemProps) => {
     },
     [deleteConfirm]
   );
+
+  const dragProps = useDragAttributes(props.event);
+  const { canDrag } = useEventPermissions(props.event);
+  const onEventClick = useStore((s) => s.onEventClick);
+  const disableViewer = useStore((s) => s.disableViewer);
+
+  if (typeof eventRenderer === "function") {
+    const custom = eventRenderer({
+      event: props.event,
+      ...dragProps,
+      draggable: !!canDrag,
+      onClick: (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!disableViewer) {
+          triggerViewer(e);
+        }
+        if (typeof onEventClick === "function") {
+          onEventClick(props.event);
+        }
+      },
+    });
+    if (custom !== null && custom !== undefined) {
+      return (
+        <Fragment>
+          {custom}
+          <EventItemPopover
+            anchorEl={anchorEl}
+            event={props.event}
+            onTriggerViewer={triggerViewer}
+          />
+        </Fragment>
+      );
+    }
+  }
 
   return (
     <Fragment>
@@ -110,7 +146,7 @@ function EventText(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Ele
         }}
       />
 
-      {!props.showdate && (
+      {props.showDate !== false && (
         <Typography fontSize="0.75rem" color="textSecondary" sx={{ textWrap: "nowrap" }}>
           {format(event.start, hFormat, { locale })}
         </Typography>
@@ -189,19 +225,7 @@ function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<El
   );
 }
 
-function EventDetails({
-  event,
-  multiday,
-  showDate = true,
-  hasPrev,
-  hasNext,
-}: {
-  event: ProcessedEvent;
-  multiday?: boolean;
-  showDate?: boolean;
-  hasPrev?: boolean;
-  hasNext?: boolean;
-}) {
+function EventDetails({ event, multiday, showDate = true, hasPrev, hasNext }: EventItemProps) {
   const { locale, hourFormat } = useStore(
     (s) => ({
       locale: s.locale,

@@ -8,7 +8,7 @@ import {
   isWithinInterval,
   startOfDay,
 } from "date-fns";
-import { View } from "../components/nav/Navigation";
+import { View } from "../types";
 import {
   convertEventTimeZone,
   differenceInDaysOmitTime,

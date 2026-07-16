@@ -1,5 +1,5 @@
 import { DragEvent } from "react";
-import { View } from "../components/nav/Navigation";
+import { View } from "../types";
 import { DefaultResource, EventActions, ProcessedEvent, SchedulerProps } from "../types";
 
 export type SelectedRange = { start: Date; end: Date };

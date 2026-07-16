@@ -3,7 +3,7 @@ import { screen } from "@testing-library/react";
 import { addDays, startOfWeek } from "date-fns";
 import { describe, expect, it, vi } from "vitest";
 import { MULTI_DAY_EVENT_HEIGHT, MONTH_NUMBER_HEIGHT } from "../../helpers/constants";
-import { PositionProvider } from "../../positionManger/provider";
+import { PositionProvider } from "../../positionManager/provider";
 import { renderWithProviders } from "../../test-utils/render";
 import { ProcessedEvent } from "../../types";
 import MonthEvents from "./MonthEvents";

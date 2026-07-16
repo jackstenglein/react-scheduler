@@ -1,5 +1,6 @@
-import { DayProps, Translations, WeekProps } from "../../types";
-import { defaultProps } from "../default";
+import { describe, expect, it } from "vitest";
+import { DayProps, Translations, WeekProps } from "../types";
+import { defaultProps } from "./default";
 
 describe("defaultProps", () => {
   it("applies default view configuration", () => {

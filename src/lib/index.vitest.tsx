@@ -1,5 +1,6 @@
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { Scheduler } from "..";
+import { Scheduler } from "./index";
 
 describe("Render scheduler", () => {
   it("Default render", () => {

@@ -2,7 +2,7 @@ import { CircularProgress, Typography } from "@mui/material";
 import { forwardRef, useMemo } from "react";
 import { Navigation } from "./components/nav/Navigation";
 import useStore, { shallowEqual, useStoreApi } from "./hooks/useStore";
-import { PositionProvider } from "./positionManger/provider";
+import { PositionProvider } from "./positionManager/provider";
 import { Table, Wrapper } from "./styles/styles";
 import { SchedulerRef } from "./types";
 import Editor from "./views/Editor";

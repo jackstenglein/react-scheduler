@@ -23,38 +23,10 @@ export const PositionProvider = ({ children }: Props) => {
   });
 
   useEffect(() => {
-    set((prev) => ({
-      ...prev,
+    set({
       renderedSlots: computeRenderedSlots(events, resources, resourceFields, fields, view),
-    }));
+    });
   }, [events, fields, resourceFields, resources, view]);
 
-  const setRenderedSlot = (day: string, eventId: string, position: number, resourceId?: string) => {
-    set((prev) => ({
-      ...prev,
-      renderedSlots: {
-        ...prev.renderedSlots,
-        [resourceId || "all"]: {
-          ...prev.renderedSlots?.[resourceId || "all"],
-          [day]: prev.renderedSlots?.[resourceId || "all"]?.[day]
-            ? {
-                ...prev.renderedSlots?.[resourceId || "all"]?.[day],
-                [eventId]: position,
-              }
-            : { [eventId]: position },
-        },
-      },
-    }));
-  };
-
-  return (
-    <PositionContext.Provider
-      value={{
-        ...state,
-        setRenderedSlot,
-      }}
-    >
-      {children}
-    </PositionContext.Provider>
-  );
+  return <PositionContext.Provider value={state}>{children}</PositionContext.Provider>;
 };
