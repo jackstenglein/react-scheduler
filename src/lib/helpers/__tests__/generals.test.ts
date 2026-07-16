@@ -194,11 +194,12 @@ describe("convertRRuleDateToDate", () => {
 });
 
 describe("sortEventsByTheLengthest", () => {
-  it("sorts events by duration descending", () => {
+  it("sorts events by number of days descending, then by start time ascending", () => {
     const short = makeEvent({ event_id: 1, end: new Date(2025, 0, 15, 11, 0) });
     const long = makeEvent({ event_id: 2, end: new Date(2025, 0, 15, 14, 0) });
-    const sorted = sortEventsByTheLengthest([short, long]);
-    expect(sorted.map((e) => e.event_id)).toEqual([2, 1]);
+    const multiday = makeEvent({ event_id: 3, end: new Date(2025, 0, 16, 14, 0) });
+    const sorted = sortEventsByTheLengthest([short, long, multiday]);
+    expect(sorted.map((e) => e.event_id)).toEqual([3, 1, 2]);
   });
 });
 

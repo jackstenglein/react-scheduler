@@ -2,6 +2,7 @@ import { Fragment, useMemo } from "react";
 import useStore from "../../hooks/useStore";
 import { TableGrid } from "../../styles/styles";
 import {
+  convertEventTimeZone,
   differenceInDaysOmitTime,
   filterMultiDaySlot,
   filterTodayEvents,
@@ -18,11 +19,12 @@ import {
   isBefore,
   isSameDay,
   isToday,
+  isWithinInterval,
   startOfDay,
 } from "date-fns";
 import usePosition from "../../positionManger/usePosition";
 import EventItem from "../events/EventItem";
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import TodayEvents from "../events/TodayEvents";
 import Cell from "../common/Cell";
 import { DateButton } from "../common/DateButton";
@@ -56,6 +58,7 @@ const WeekTable = ({
     hourFormat,
     timeZone,
     stickyNavigation,
+    translations,
   } = useStore();
   const { startHour, endHour, step, cellRenderer, disableGoToDay } = week!;
   const { renderedSlots } = usePosition();
@@ -64,6 +67,8 @@ const WeekTable = ({
   const weekStart = startOfDay(daysList[0]);
   const weekEnd = endOfDay(daysList[daysList.length - 1]);
   const hFormat = getHourFormat(hourFormat);
+
+  const allDayEvents = getAllDayEvents(events, daysList, timeZone);
 
   // Equalizing multi-day section height except in resource/tabs mode
   const _headerHeight = useMemo(() => {
@@ -146,6 +151,66 @@ const WeekTable = ({
             locale={locale}
           />
         ))}
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderTop: "1px solid",
+            borderRight: "1px solid",
+            borderColor: "divider",
+            minHeight: "34px",
+          }}
+        >
+          <Typography
+            component="p"
+            variant="caption"
+            color="textSecondary"
+            sx={{ fontStyle: "italic" }}
+          >
+            {translations.event.allDay}
+          </Typography>
+        </Box>
+
+        {daysList.map((date, i) => (
+          <Box
+            key={i}
+            sx={{
+              borderTop: "1px solid",
+              borderLeft: i === 0 ? undefined : "1px solid",
+              borderColor: "divider",
+              paddingY: 0.5,
+              paddingRight: 0.25,
+              position: "relative",
+            }}
+          >
+            <Box sx={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }}>
+              <Cell
+                start={startOfDay(date)}
+                end={endOfDay(date)}
+                day={date}
+                height={cellHeight}
+                resourceKey={resourceFields.idField}
+                resourceVal={resource ? resource[resourceFields.idField] : null}
+                cellRenderer={cellRenderer}
+              />
+            </Box>
+
+            <Stack sx={{ gap: 0.25 }}>
+              {allDayEvents[i].map((event) => (
+                <EventItem
+                  key={event.event_id}
+                  event={event}
+                  multiday
+                  hasPrev={isBefore(event.start, startOfDay(date))}
+                  hasNext={isBefore(endOfDay(date), event.end)}
+                  sx={{ width: "unset" }}
+                />
+              ))}
+            </Stack>
+          </Box>
+        ))}
       </TableGrid>
 
       {/* Time Cells */}
@@ -219,3 +284,36 @@ const WeekTable = ({
 };
 
 export default WeekTable;
+
+/**
+ * Returns a 2-dimensional list of ProcessedEvents that run all day. Events are
+ * included only in the list corresponding to their start day.
+ * @param events The events to check for all day events.
+ * @param daysList The list of days to check.
+ * @param timeZone The timeZone to convert events to.
+ * @returns A 2D list of events, where the first dimensions corresponds to daysList.
+ */
+function getAllDayEvents(
+  events: ProcessedEvent[],
+  daysList: Date[],
+  timeZone?: string
+): ProcessedEvent[][] {
+  const result: ProcessedEvent[][] = daysList.map(() => []);
+  for (let event of events) {
+    event = convertEventTimeZone(event, timeZone);
+    const allDay = event.allDay || differenceInDaysOmitTime(event.start, event.end) > 0;
+    if (!allDay) {
+      continue;
+    }
+
+    for (let i = 0; i < daysList.length; i++) {
+      const day = daysList[i];
+      if (isWithinInterval(day, { start: startOfDay(event.start), end: endOfDay(event.end) })) {
+        result[i].push(event);
+        break;
+      }
+    }
+  }
+  console.log("allDayEvents:", result);
+  return result;
+}

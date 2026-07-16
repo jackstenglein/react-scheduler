@@ -1,9 +1,7 @@
 import { Fragment, MouseEvent, useCallback, useState } from "react";
-import { Typography, ButtonBase, useTheme, Box, alpha } from "@mui/material";
+import { Typography, ButtonBase, useTheme, Box, alpha, SxProps } from "@mui/material";
 import { format } from "date-fns";
 import { ProcessedEvent } from "../../types";
-import ArrowRightRoundedIcon from "@mui/icons-material/ArrowRightRounded";
-import ArrowLeftRoundedIcon from "@mui/icons-material/ArrowLeftRounded";
 import { EventItemPaper } from "../../styles/styles";
 import { differenceInDaysOmitTime, getHourFormat } from "../../helpers/generals";
 import useStore from "../../hooks/useStore";
@@ -18,6 +16,7 @@ interface EventItemProps {
   hasNext?: boolean;
   showdate?: boolean;
   variant?: "paper" | "text";
+  sx?: SxProps;
 }
 
 const EventItem = (props: EventItemProps) => {
@@ -120,7 +119,7 @@ function EventText(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Ele
 }
 
 function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Element>) => void }) {
-  const { event, triggerViewer } = props;
+  const { event, triggerViewer, hasPrev, hasNext } = props;
   const theme = useTheme();
   const { onEventClick, disableViewer } = useStore();
   const dragProps = useDragAttributes(props.event);
@@ -140,7 +139,16 @@ function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<El
               event.color || (theme.vars || theme).palette.primary.contrastText
             ),
         ml: 0.25,
+        clipPath:
+          hasPrev && hasNext
+            ? `polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%)`
+            : hasPrev
+              ? `polygon(8px 0, 100% 0, 100% 100%, 8px 100%, 0 50%)`
+              : hasNext
+                ? `polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%)`
+                : undefined,
         ...(event.sx || {}),
+        ...(props.sx || {}),
       }}
       {...dragProps}
       draggable={canDrag}
@@ -180,10 +188,7 @@ function EventDetails({
   hasPrev?: boolean;
   hasNext?: boolean;
 }) {
-  const { direction, locale, hourFormat } = useStore();
-
-  const NextArrow = direction === "rtl" ? ArrowLeftRoundedIcon : ArrowRightRoundedIcon;
-  const PrevArrow = direction === "rtl" ? ArrowRightRoundedIcon : ArrowLeftRoundedIcon;
+  const { locale, hourFormat } = useStore();
   const hFormat = getHourFormat(hourFormat);
   const hideDates = differenceInDaysOmitTime(event.start, event.end) <= 0 && event.allDay;
 
@@ -191,28 +196,21 @@ function EventDetails({
     return (
       <div
         style={{
-          padding: 2,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          paddingLeft: "2px",
+          paddingRight: "2px",
         }}
       >
         <Typography sx={{ fontSize: 11 }} noWrap>
-          {hasPrev ? (
-            <PrevArrow fontSize="small" sx={{ display: "flex" }} />
-          ) : (
-            showDate && !hideDates && format(event.start, hFormat, { locale })
-          )}
+          {!hasPrev && showDate && !hideDates && format(event.start, hFormat, { locale })}
         </Typography>
         <Typography variant="subtitle2" align="center" sx={{ fontSize: 12 }} noWrap>
           {event.title}
         </Typography>
         <Typography sx={{ fontSize: 11 }} noWrap>
-          {hasNext ? (
-            <NextArrow fontSize="small" sx={{ display: "flex" }} />
-          ) : (
-            showDate && !hideDates && format(event.end, hFormat, { locale })
-          )}
+          {!hasNext && showDate && !hideDates && format(event.end, hFormat, { locale })}
         </Typography>
       </div>
     );
