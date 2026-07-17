@@ -117,6 +117,8 @@ export const defaultProps = (props: Partial<SchedulerProps>) => {
     disableViewNavigator: false,
     events: [],
     fields: [],
+    slots: {},
+    slotProps: {},
     loading: undefined,
     customEditor: undefined,
     onConfirm: undefined,

@@ -213,6 +213,55 @@ export type ResourceFields = {
   colorField?: string;
 } & Record<string, string>;
 
+/** Props-or-callback form used by MUI-style `slotProps`. */
+export type SlotPropsOf<P> = Partial<P> | ((ownerState: P) => Partial<P> | undefined);
+
+export type EventSlotProps = EventRendererProps;
+
+export type EventViewerSlotProps = {
+  event: ProcessedEvent;
+  close: () => void;
+};
+
+export type EventViewerTitleSlotProps = {
+  event: ProcessedEvent;
+};
+
+export type EventViewerSubtitleSlotProps = {
+  event: ProcessedEvent;
+};
+
+export type EventViewerExtraSlotProps = {
+  event: ProcessedEvent;
+  fields: FieldProps[];
+};
+
+export type LoadingOverlaySlotProps = {
+  loadingLabel: string;
+};
+
+/**
+ * Replaceable UI regions (MUI slots pattern).
+ * Prefer these over legacy `*Renderer` / `*Component` props.
+ */
+export interface SchedulerSlots {
+  event?: React.ComponentType<EventSlotProps>;
+  eventViewer?: React.ComponentType<EventViewerSlotProps>;
+  eventViewerTitle?: React.ComponentType<EventViewerTitleSlotProps>;
+  eventViewerSubtitle?: React.ComponentType<EventViewerSubtitleSlotProps>;
+  eventViewerExtra?: React.ComponentType<EventViewerExtraSlotProps>;
+  loadingOverlay?: React.ComponentType<LoadingOverlaySlotProps>;
+}
+
+export interface SchedulerSlotProps {
+  event?: SlotPropsOf<EventSlotProps>;
+  eventViewer?: SlotPropsOf<EventViewerSlotProps>;
+  eventViewerTitle?: SlotPropsOf<EventViewerTitleSlotProps>;
+  eventViewerSubtitle?: SlotPropsOf<EventViewerSubtitleSlotProps>;
+  eventViewerExtra?: SlotPropsOf<EventViewerExtraSlotProps>;
+  loadingOverlay?: SlotPropsOf<LoadingOverlaySlotProps>;
+}
+
 export interface SchedulerHelpers {
   state: Record<string, StateItem>;
   close(): void;
@@ -253,7 +302,17 @@ export interface SchedulerProps {
   >;
   /**Events to display */
   events: ProcessedEvent[];
-  /** Custom event render method */
+  /**
+   * MUI-style slot components for replaceable UI regions.
+   * Prefer over legacy `eventRenderer` / `*Component` props.
+   */
+  slots?: SchedulerSlots;
+  /** Props (or ownerState callbacks) passed into each slot */
+  slotProps?: SchedulerSlotProps;
+  /**
+   * Custom event render method
+   * @deprecated Prefer `slots.event`
+   */
   eventRenderer?: (props: EventRendererProps) => React.ReactNode | null;
   /**Async function to load remote data with current view data. */
   getRemoteEvents?(params: RemoteQuery): Promise<ProcessedEvent[] | void>;
@@ -261,7 +320,10 @@ export interface SchedulerProps {
   fields: FieldProps[];
   /**Table loading state */
   loading?: boolean;
-  /** Custom loading component */
+  /**
+   * Custom loading component
+   * @deprecated Prefer `slots.loadingOverlay`
+   */
   loadingComponent?: React.ReactNode;
   /**Async function triggered when add/edit event */
   onConfirm?(event: ProcessedEvent, action: EventActions): Promise<ProcessedEvent>;
@@ -269,15 +331,27 @@ export interface SchedulerProps {
   onDelete?(deletedId: string | number): Promise<string | number | void>;
   /**Override editor modal */
   customEditor?(scheduler: SchedulerHelpers): React.ReactNode;
-  /** Custom viewer/popper component. If used, `viewerExtraComponent` & `viewerTitleComponent` will be ignored */
+  /**
+   * Custom viewer/popper component. If used, title/subtitle/extra slots are ignored
+   * @deprecated Prefer `slots.eventViewer`
+   */
   customViewer?(event: ProcessedEvent, close: () => void): React.ReactNode;
-  /**Additional component in event viewer popper */
+  /**
+   * Additional component in event viewer popper
+   * @deprecated Prefer `slots.eventViewerExtra`
+   */
   viewerExtraComponent?:
     | React.ReactNode
     | ((fields: FieldProps[], event: ProcessedEvent) => React.ReactNode);
-  /**Override viewer title component */
+  /**
+   * Override viewer title component
+   * @deprecated Prefer `slots.eventViewerTitle`
+   */
   viewerTitleComponent?(event: ProcessedEvent): React.ReactNode;
-  /**Override viewer subtitle component */
+  /**
+   * Override viewer subtitle component
+   * @deprecated Prefer `slots.eventViewerSubtitle`
+   */
   viewerSubtitleComponent?(event: ProcessedEvent): React.ReactNode;
   /** if true, the viewer popover will be disabled globally */
   disableViewer?: boolean;

@@ -1,13 +1,14 @@
 import { Fragment, memo, MouseEvent, useCallback, useState } from "react";
 import { Typography, ButtonBase, useTheme, Box, alpha, SxProps } from "@mui/material";
 import { format } from "date-fns";
-import { ProcessedEvent } from "../../types";
+import { EventSlotProps, ProcessedEvent } from "../../types";
 import { EventItemPaper } from "../../styles/styles";
 import { differenceInDaysOmitTime, getHourFormat } from "../../helpers/generals";
 import useStore, { shallowEqual } from "../../hooks/useStore";
 import useDragAttributes from "../../hooks/useDragAttributes";
 import EventItemPopover from "./EventItemPopover";
 import useEventPermissions from "../../hooks/useEventPermissions";
+import { renderSlot, resolveSlotProps } from "../../slots/resolveSlot";
 
 interface EventItemProps {
   event: ProcessedEvent;
@@ -22,7 +23,14 @@ interface EventItemProps {
 const EventItem = (props: EventItemProps) => {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const eventRenderer = useStore((s) => s.eventRenderer);
+  const { slots, slotProps, eventRenderer } = useStore(
+    (s) => ({
+      slots: s.slots,
+      slotProps: s.slotProps,
+      eventRenderer: s.eventRenderer,
+    }),
+    shallowEqual
+  );
 
   const triggerViewer = useCallback(
     (el?: MouseEvent<Element>) => {
@@ -39,22 +47,39 @@ const EventItem = (props: EventItemProps) => {
   const onEventClick = useStore((s) => s.onEventClick);
   const disableViewer = useStore((s) => s.disableViewer);
 
+  const ownerState: EventSlotProps = {
+    event: props.event,
+    ...dragProps,
+    draggable: !!canDrag,
+    onClick: (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!disableViewer) {
+        triggerViewer(e);
+      }
+      if (typeof onEventClick === "function") {
+        onEventClick(props.event);
+      }
+    },
+  };
+
+  if (slots?.event) {
+    return (
+      <Fragment>
+        {renderSlot({
+          slot: slots.event,
+          slotProps: slotProps?.event,
+          ownerState,
+          defaultElement: null,
+        })}
+        <EventItemPopover anchorEl={anchorEl} event={props.event} onTriggerViewer={triggerViewer} />
+      </Fragment>
+    );
+  }
+
   if (typeof eventRenderer === "function") {
-    const custom = eventRenderer({
-      event: props.event,
-      ...dragProps,
-      draggable: !!canDrag,
-      onClick: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!disableViewer) {
-          triggerViewer(e);
-        }
-        if (typeof onEventClick === "function") {
-          onEventClick(props.event);
-        }
-      },
-    });
+    const resolved = resolveSlotProps(slotProps?.event, ownerState);
+    const custom = eventRenderer({ ...ownerState, ...resolved });
     if (custom !== null && custom !== undefined) {
       return (
         <Fragment>

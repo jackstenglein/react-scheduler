@@ -1,7 +1,7 @@
 import { MouseEvent } from "react";
 import { Box, IconButton, Popover, Typography, useTheme } from "@mui/material";
-import useStore from "../../hooks/useStore";
-import { ProcessedEvent } from "../../types";
+import useStore, { shallowEqual } from "../../hooks/useStore";
+import { EventViewerSlotProps, ProcessedEvent } from "../../types";
 import { PopperInner } from "../../styles/styles";
 import EventActions from "./Actions";
 import { differenceInDaysOmitTime, getHourFormat } from "../../helpers/generals";
@@ -9,6 +9,7 @@ import EventNoteRoundedIcon from "@mui/icons-material/EventNoteRounded";
 import ClearRoundedIcon from "@mui/icons-material/ClearRounded";
 import SupervisorAccountRoundedIcon from "@mui/icons-material/SupervisorAccountRounded";
 import { format } from "date-fns";
+import { renderSlot } from "../../slots/resolveSlot";
 
 type Props = {
   event: ProcessedEvent;
@@ -23,18 +24,34 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
     events,
     handleState,
     triggerLoading,
-    customViewer,
-    viewerExtraComponent,
     fields,
     resources,
     resourceFields,
     locale,
-    viewerTitleComponent,
-    viewerSubtitleComponent,
     hourFormat,
     translations,
     onEventEdit,
-  } = useStore();
+    slots,
+    slotProps,
+  } = useStore(
+    (s) => ({
+      triggerDialog: s.triggerDialog,
+      onDelete: s.onDelete,
+      events: s.events,
+      handleState: s.handleState,
+      triggerLoading: s.triggerLoading,
+      fields: s.fields,
+      resources: s.resources,
+      resourceFields: s.resourceFields,
+      locale: s.locale,
+      hourFormat: s.hourFormat,
+      translations: s.translations,
+      onEventEdit: s.onEventEdit,
+      slots: s.slots,
+      slotProps: s.slotProps,
+    }),
+    shallowEqual
+  );
   const theme = useTheme();
   const hideDates = differenceInDaysOmitTime(event.start, event.end) <= 0 && event.allDay;
   const hFormat = getHourFormat(hourFormat);
@@ -68,13 +85,14 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
     }
   };
 
+  const close = () => onTriggerViewer();
+  const viewerOwnerState: EventViewerSlotProps = { event, close };
+
   return (
     <Popover
       open={Boolean(anchorEl)}
       anchorEl={anchorEl}
-      onClose={() => {
-        onTriggerViewer();
-      }}
+      onClose={close}
       anchorOrigin={{
         vertical: "center",
         horizontal: "center",
@@ -87,8 +105,13 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
         e.stopPropagation();
       }}
     >
-      {typeof customViewer === "function" ? (
-        customViewer(event, () => onTriggerViewer())
+      {slots?.eventViewer ? (
+        renderSlot({
+          slot: slots.eventViewer,
+          slotProps: slotProps?.eventViewer,
+          ownerState: viewerOwnerState,
+          defaultElement: null,
+        })
       ) : (
         <PopperInner>
           <Box
@@ -99,12 +122,7 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
           >
             <div className="rs__popper_actions">
               <div>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    onTriggerViewer();
-                  }}
-                >
+                <IconButton size="small" onClick={close}>
                   <ClearRoundedIcon color="disabled" />
                 </IconButton>
               </div>
@@ -121,13 +139,16 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
                 }}
               />
             </div>
-            {viewerTitleComponent instanceof Function ? (
-              viewerTitleComponent(event)
-            ) : (
-              <Typography style={{ padding: "5px 0" }} noWrap>
-                {event.title}
-              </Typography>
-            )}
+            {renderSlot({
+              slot: slots?.eventViewerTitle,
+              slotProps: slotProps?.eventViewerTitle,
+              ownerState: { event },
+              defaultElement: (
+                <Typography style={{ padding: "5px 0" }} noWrap>
+                  {event.title}
+                </Typography>
+              ),
+            })}
           </Box>
           <div style={{ padding: "5px 10px" }}>
             <Typography
@@ -145,13 +166,16 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
                     locale: locale,
                   })}`}
             </Typography>
-            {viewerSubtitleComponent instanceof Function ? (
-              viewerSubtitleComponent(event)
-            ) : (
-              <Typography variant="body2" style={{ padding: "5px 0" }}>
-                {event.subtitle}
-              </Typography>
-            )}
+            {renderSlot({
+              slot: slots?.eventViewerSubtitle,
+              slotProps: slotProps?.eventViewerSubtitle,
+              ownerState: { event },
+              defaultElement: (
+                <Typography variant="body2" style={{ padding: "5px 0" }}>
+                  {event.subtitle}
+                </Typography>
+              ),
+            })}
             {hasResource.length > 0 && (
               <Typography
                 style={{ display: "flex", alignItems: "center", gap: 8 }}
@@ -163,9 +187,12 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
                 {hasResource.map((res) => res[resourceFields.textField]).join(", ")}
               </Typography>
             )}
-            {viewerExtraComponent instanceof Function
-              ? viewerExtraComponent(fields, event)
-              : viewerExtraComponent}
+            {renderSlot({
+              slot: slots?.eventViewerExtra,
+              slotProps: slotProps?.eventViewerExtra,
+              ownerState: { event, fields },
+              defaultElement: null,
+            })}
           </div>
         </PopperInner>
       )}
