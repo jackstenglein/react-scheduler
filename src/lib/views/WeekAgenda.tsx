@@ -19,7 +19,7 @@ const WeekAgenda = ({ daysList, resource, events }: Props) => {
     }),
     shallowEqual
   );
-  const { disableGoToDay, headRenderer } = week!;
+  const { disableGoToDay } = week!;
 
   const hasEvents = useMemo(() => {
     return daysList.some((day) => filterTodayAgendaEvents(events, day).length > 0);
@@ -42,7 +42,6 @@ const WeekAgenda = ({ daysList, resource, events }: Props) => {
             dayEvents={dayEvents}
             events={events}
             resource={resource}
-            headRenderer={headRenderer}
             disableGoToDay={disableGoToDay}
           />
         );

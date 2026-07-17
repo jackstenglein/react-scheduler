@@ -14,7 +14,6 @@ type Props = {
 const CONTROLLED_KEYS = [
   "events",
   "onEventDrop",
-  "customEditor",
   "loading",
   "resources",
   "resourceFields",
@@ -49,7 +48,6 @@ const CONTROLLED_KEYS = [
   "disableViewNavigator",
   "dialogMaxWidth",
   "disableViewer",
-  "resourceHeaderComponent",
   "navigationPickerProps",
   "slots",
   "slotProps",

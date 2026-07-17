@@ -5,6 +5,7 @@ import { getHourFormat, isTimeZonedToday } from "../../helpers/generals";
 import useStore, { shallowEqual } from "../../hooks/useStore";
 import useSyncScroll from "../../hooks/useSyncScroll";
 import { computeMonthGridEvents } from "../../layout/eventLayout";
+import { renderSlot } from "../../slots/resolveSlot";
 import { TableGrid } from "../../styles/styles";
 import { DefaultResource } from "../../types";
 import Cell from "../common/Cell";
@@ -30,6 +31,8 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
     stickyNavigation,
     timeZone,
     onClickMore,
+    slots,
+    slotProps,
   } = useStore(
     (s) => ({
       height: s.height,
@@ -44,10 +47,12 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
       stickyNavigation: s.stickyNavigation,
       timeZone: s.timeZone,
       onClickMore: s.onClickMore,
+      slots: s.slots,
+      slotProps: s.slotProps,
     }),
     shallowEqual
   );
-  const { weekDays, startHour, endHour, cellRenderer, headRenderer, disableGoToDay } = month!;
+  const { weekDays, startHour, endHour, disableGoToDay } = month!;
   const { headersRef, bodyRef } = useSyncScroll();
 
   const monthStart = startOfMonth(selectedDate);
@@ -90,12 +95,16 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
               height={CELL_HEIGHT}
               resourceKey={field}
               resourceVal={resource ? resource[field] : null}
-              cellRenderer={cellRenderer}
             />
             <Fragment>
-              {typeof headRenderer === "function" ? (
+              {slots?.dayHeader ? (
                 <div style={{ position: "absolute", top: 0 }}>
-                  {headRenderer({ day: today, events: resourcedEvents, resource })}
+                  {renderSlot({
+                    slot: slots.dayHeader,
+                    slotProps: slotProps?.dayHeader,
+                    ownerState: { day: today, events: resourcedEvents, resource },
+                    defaultElement: null,
+                  })}
                 </div>
               ) : (
                 <Button
@@ -156,7 +165,6 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
     return result;
   }, [
     CELL_HEIGHT,
-    cellRenderer,
     daysList,
     disableGoToDay,
     eachWeekStart,
@@ -165,13 +173,14 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
     resourcedEvents,
     hFormat,
     handleGotoDay,
-    headRenderer,
     locale,
     monthStart,
     onClickMore,
     resource,
     resourceFields.idField,
     selectedDate,
+    slots,
+    slotProps,
     startHour,
     timeZone,
     weekDays,

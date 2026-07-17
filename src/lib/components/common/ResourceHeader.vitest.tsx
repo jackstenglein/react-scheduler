@@ -24,12 +24,14 @@ describe("ResourceHeader", () => {
     expect(screen.getByAltText("Alice Smith")).toBeInTheDocument();
   });
 
-  it("uses a custom header component when provided", () => {
+  it("uses a custom resourceHeader slot when provided", () => {
     renderWithProviders(<ResourceHeader resource={resource} />, {
       initial: {
-        resourceHeaderComponent: (res: DefaultResource) => (
-          <div data-testid="custom-header">{res.text}</div>
-        ),
+        slots: {
+          resourceHeader: ({ resource: res }: { resource: DefaultResource }) => (
+            <div data-testid="custom-header">{res.text}</div>
+          ),
+        },
       },
     });
     expect(screen.getByTestId("custom-header")).toHaveTextContent("Alice Smith");

@@ -11,6 +11,7 @@ import TodayEvents from "../events/TodayEvents";
 import Cell from "../common/Cell";
 import { DateButton } from "../common/DateButton";
 import { computeWeekLayout } from "../../layout/eventLayout";
+import { renderSlot } from "../../slots/resolveSlot";
 
 type Props = {
   daysList: Date[];
@@ -31,8 +32,6 @@ const WeekTable = ({
 }: Props) => {
   const {
     week,
-    day,
-    view,
     events,
     handleGotoDay,
     resourceFields,
@@ -42,11 +41,11 @@ const WeekTable = ({
     translations,
     timeZone,
     direction,
+    slots,
+    slotProps,
   } = useStore(
     (s) => ({
       week: s.week,
-      day: s.day,
-      view: s.view,
       events: s.events,
       handleGotoDay: s.handleGotoDay,
       resourceFields: s.resourceFields,
@@ -56,11 +55,12 @@ const WeekTable = ({
       translations: s.translations,
       timeZone: s.timeZone,
       direction: s.direction,
+      slots: s.slots,
+      slotProps: s.slotProps,
     }),
     shallowEqual
   );
-  const { startHour, endHour, step, cellRenderer, disableGoToDay } = week!;
-  const hourRenderer = view === "day" ? day?.hourRenderer : week?.hourRenderer;
+  const { startHour, endHour, step, disableGoToDay } = week!;
   const { headersRef, bodyRef } = useSyncScroll();
   const hFormat = getHourFormat(hourFormat);
 
@@ -141,7 +141,6 @@ const WeekTable = ({
                 height={cellHeight}
                 resourceKey={resourceFields.idField}
                 resourceVal={resource ? resource[resourceFields.idField] : null}
-                cellRenderer={cellRenderer}
               />
             </Box>
 
@@ -178,18 +177,25 @@ const WeekTable = ({
             >
               {i > 0 && (
                 <span>
-                  {typeof hourRenderer === "function" ? (
-                    hourRenderer(format(h, hFormat, { locale }))
-                  ) : (
-                    <Typography
-                      component="p"
-                      variant="caption"
-                      color="textSecondary"
-                      sx={{ position: "relative", top: "-50%" }}
-                    >
-                      {format(h, hFormat, { locale })}
-                    </Typography>
-                  )}
+                  {renderSlot({
+                    slot: slots?.hourLabel,
+                    slotProps: slotProps?.hourLabel,
+                    ownerState: {
+                      hour: format(h, hFormat, { locale }),
+                      date: h,
+                      hourFormat,
+                    },
+                    defaultElement: (
+                      <Typography
+                        component="p"
+                        variant="caption"
+                        color="textSecondary"
+                        sx={{ position: "relative", top: "-50%" }}
+                      >
+                        {format(h, hFormat, { locale })}
+                      </Typography>
+                    ),
+                  })}
                 </span>
               )}
             </Box>
@@ -223,7 +229,6 @@ const WeekTable = ({
                     height={cellHeight}
                     resourceKey={field}
                     resourceVal={resource ? resource[field] : null}
-                    cellRenderer={cellRenderer}
                   />
                 </span>
               );

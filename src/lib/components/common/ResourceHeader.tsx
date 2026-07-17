@@ -7,13 +7,23 @@ import {
   useTheme,
 } from "@mui/material";
 import { DefaultResource } from "../../types";
-import useStore from "../../hooks/useStore";
+import useStore, { shallowEqual } from "../../hooks/useStore";
+import { renderSlot } from "../../slots/resolveSlot";
 
 interface ResourceHeaderProps {
   resource: DefaultResource;
 }
 const ResourceHeader = ({ resource }: ResourceHeaderProps) => {
-  const { resourceHeaderComponent, resourceFields, direction, resourceViewMode } = useStore();
+  const { slots, slotProps, resourceFields, direction, resourceViewMode } = useStore(
+    (s) => ({
+      slots: s.slots,
+      slotProps: s.slotProps,
+      resourceFields: s.resourceFields,
+      direction: s.direction,
+      resourceViewMode: s.resourceViewMode,
+    }),
+    shallowEqual
+  );
   const theme = useTheme();
 
   const text = resource[resourceFields.textField];
@@ -21,8 +31,17 @@ const ResourceHeader = ({ resource }: ResourceHeaderProps) => {
   const avatar = resource[resourceFields.avatarField || ""];
   const color = resource[resourceFields.colorField || ""];
 
-  if (resourceHeaderComponent instanceof Function) {
-    return resourceHeaderComponent(resource);
+  if (slots?.resourceHeader) {
+    return (
+      <>
+        {renderSlot({
+          slot: slots.resourceHeader,
+          slotProps: slotProps?.resourceHeader,
+          ownerState: { resource },
+          defaultElement: null,
+        })}
+      </>
+    );
   }
 
   return (

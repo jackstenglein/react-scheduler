@@ -1,6 +1,8 @@
 import { Button, alpha } from "@mui/material";
+import useStore, { shallowEqual } from "../../hooks/useStore";
 import { useCellAttributes } from "../../hooks/useCellAttributes";
-import { CellRenderedProps } from "../../types";
+import { renderSlot } from "../../slots/resolveSlot";
+import { CellSlotProps } from "../../types";
 
 interface CellProps {
   day: Date;
@@ -8,31 +10,45 @@ interface CellProps {
   height: number;
   end: Date;
   resourceKey: string;
-  resourceVal: string | number;
-  cellRenderer?(props: CellRenderedProps): React.ReactNode;
+  resourceVal: string | number | null;
   children?: React.ReactNode;
 }
 
-const Cell = ({
-  day,
-  start,
-  end,
-  resourceKey,
-  resourceVal,
-  cellRenderer,
-  height,
-  children,
-}: CellProps) => {
-  const props = useCellAttributes({ start, end, resourceKey, resourceVal });
+const Cell = ({ day, start, end, resourceKey, resourceVal, height, children }: CellProps) => {
+  const { slots, slotProps } = useStore(
+    (s) => ({
+      slots: s.slots,
+      slotProps: s.slotProps,
+    }),
+    shallowEqual
+  );
+  const cellAttrs = useCellAttributes({ start, end, resourceKey, resourceVal: resourceVal ?? "" });
 
-  if (cellRenderer) {
-    return cellRenderer({
-      day,
-      start,
-      end,
-      height,
-      ...props,
-    });
+  const ownerState: CellSlotProps = {
+    day,
+    start,
+    end,
+    height,
+    resourceKey,
+    resourceVal,
+    onClick: cellAttrs.onClick,
+    onDragOver: cellAttrs.onDragOver,
+    onDragEnter: cellAttrs.onDragEnter,
+    onDragLeave: cellAttrs.onDragLeave,
+    onDrop: cellAttrs.onDrop,
+  };
+
+  if (slots?.cell) {
+    return (
+      <>
+        {renderSlot({
+          slot: slots.cell,
+          slotProps: slotProps?.cell,
+          ownerState,
+          defaultElement: null,
+        })}
+      </>
+    );
   }
 
   return (
@@ -51,7 +67,7 @@ const Cell = ({
           background: (theme) => alpha(theme.palette.primary.main, 0.1),
         },
       }}
-      {...props}
+      {...cellAttrs}
     >
       {children}
     </Button>

@@ -135,4 +135,50 @@ describe("Scheduler slots integration", () => {
 
     expect(screen.getByTestId("slot-event")).toHaveAttribute("data-draggable", "false");
   });
+
+  it("renders slots.hourLabel in week view", () => {
+    function CustomHour({ hour }: { hour: string }) {
+      return <div data-testid="slot-hour">{hour}</div>;
+    }
+
+    renderScheduler({
+      view: "week",
+      selectedDate: new Date(2025, 0, 15),
+      events: [],
+      slots: { hourLabel: CustomHour },
+    });
+
+    expect(screen.getAllByTestId("slot-hour").length).toBeGreaterThan(0);
+  });
+
+  it("renders slots.cell instead of the default cell button", () => {
+    function CustomCell({ start }: { start: Date }) {
+      return <div data-testid="slot-cell">{start.toISOString()}</div>;
+    }
+
+    renderScheduler({
+      view: "week",
+      selectedDate: new Date(2025, 0, 15),
+      events: [],
+      slots: { cell: CustomCell },
+    });
+
+    expect(screen.getAllByTestId("slot-cell").length).toBeGreaterThan(0);
+  });
+
+  it("renders slots.resourceHeader for resources", () => {
+    function CustomHeader({ resource }: { resource: { text?: string } }) {
+      return <div data-testid="slot-resource">{resource.text}</div>;
+    }
+
+    renderScheduler({
+      view: "week",
+      selectedDate: new Date(2025, 0, 15),
+      events: [],
+      resources: [{ assignee: 1, text: "Alice", subtext: "Eng", color: "#333" }],
+      slots: { resourceHeader: CustomHeader },
+    });
+
+    expect(screen.getByTestId("slot-resource")).toHaveTextContent("Alice");
+  });
 });

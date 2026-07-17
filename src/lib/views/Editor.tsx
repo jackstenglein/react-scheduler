@@ -14,7 +14,8 @@ import { EditorDatePicker } from "../components/inputs/DatePicker";
 import { EditorInput } from "../components/inputs/Input";
 import { EditorSelect } from "../components/inputs/SelectInput";
 import { arraytizeFieldVal, revertTimeZonedDate } from "../helpers/generals";
-import useStore from "../hooks/useStore";
+import useStore, { shallowEqual } from "../hooks/useStore";
+import { renderSlot } from "../slots/resolveSlot";
 import { SelectedRange } from "../store/types";
 import {
   EventActions,
@@ -93,12 +94,32 @@ const Editor = () => {
     selectedResource,
     triggerLoading,
     onConfirm,
-    customEditor,
     confirmEvent,
     dialogMaxWidth,
     translations,
     timeZone,
-  } = useStore();
+    slots,
+    slotProps,
+  } = useStore(
+    (s) => ({
+      fields: s.fields,
+      dialog: s.dialog,
+      triggerDialog: s.triggerDialog,
+      selectedRange: s.selectedRange,
+      selectedEvent: s.selectedEvent,
+      resourceFields: s.resourceFields,
+      selectedResource: s.selectedResource,
+      triggerLoading: s.triggerLoading,
+      onConfirm: s.onConfirm,
+      confirmEvent: s.confirmEvent,
+      dialogMaxWidth: s.dialogMaxWidth,
+      translations: s.translations,
+      timeZone: s.timeZone,
+      slots: s.slots,
+      slotProps: s.slotProps,
+    }),
+    shallowEqual
+  );
   const [state, setState] = useState(initialState(fields, selectedEvent || selectedRange));
   const [touched, setTouched] = useState(false);
   const theme = useTheme();
@@ -124,7 +145,7 @@ const Editor = () => {
     let body = {} as ProcessedEvent;
     for (const key in state) {
       body[key] = state[key].value;
-      if (!customEditor && !state[key].validity) {
+      if (!slots?.editor && !state[key].validity) {
         return setTouched(true);
       }
     }
@@ -201,17 +222,24 @@ const Editor = () => {
   };
 
   const renderEditor = () => {
-    if (customEditor) {
-      const schedulerHelpers: SchedulerHelpers = {
-        state,
-        close: () => triggerDialog(false),
-        loading: (load) => triggerLoading(load),
-        edited: selectedEvent,
-        onConfirm: confirmEvent,
-        [resourceFields.idField]: selectedResource,
-      };
-      return customEditor(schedulerHelpers);
+    const schedulerHelpers: SchedulerHelpers = {
+      state,
+      close: () => triggerDialog(false),
+      loading: (load) => triggerLoading(load),
+      edited: selectedEvent,
+      onConfirm: confirmEvent,
+      [resourceFields.idField]: selectedResource,
+    };
+
+    if (slots?.editor) {
+      return renderSlot({
+        slot: slots.editor,
+        slotProps: slotProps?.editor,
+        ownerState: schedulerHelpers,
+        defaultElement: null,
+      });
     }
+
     return (
       <Fragment>
         <DialogTitle>

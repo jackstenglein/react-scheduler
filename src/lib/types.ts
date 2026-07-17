@@ -47,25 +47,15 @@ interface CommonWeekViewProps {
 interface CommonViewProps {
   startHour: DayHours;
   endHour: DayHours;
-  cellRenderer?(props: CellRenderedProps): React.ReactNode;
-  headRenderer?(props: {
-    day: Date;
-    events: ProcessedEvent[];
-    resource?: DefaultResource;
-  }): React.ReactNode;
   navigation?: boolean;
   step: number;
 }
 
 export interface MonthProps extends CommonWeekViewProps, CommonViewProps {}
 
-export interface WeekProps extends CommonWeekViewProps, CommonViewProps {
-  hourRenderer?(hour: string): React.ReactNode;
-}
+export interface WeekProps extends CommonWeekViewProps, CommonViewProps {}
 
-export interface DayProps extends CommonViewProps {
-  hourRenderer?(hour: string): React.ReactNode;
-}
+export interface DayProps extends CommonViewProps {}
 
 export interface CellRenderedProps {
   day: Date;
@@ -240,6 +230,38 @@ export type LoadingOverlaySlotProps = {
   loadingLabel: string;
 };
 
+export type CellSlotProps = CellRenderedProps & {
+  resourceKey: string;
+  resourceVal: string | number | null;
+};
+
+export type DayHeaderSlotProps = {
+  day: Date;
+  events: ProcessedEvent[];
+  resource?: DefaultResource;
+};
+
+export type HourLabelSlotProps = {
+  hour: string;
+  date: Date;
+  hourFormat: "12" | "24";
+};
+
+export type ResourceHeaderSlotProps = {
+  resource: DefaultResource;
+};
+
+export interface SchedulerHelpers {
+  state: Record<string, StateItem>;
+  close(): void;
+  loading(status: boolean): void;
+  edited?: ProcessedEvent;
+  onConfirm(event: ProcessedEvent | ProcessedEvent[], action: EventActions): void;
+  [resourceKey: string]: unknown;
+}
+
+export type EditorSlotProps = SchedulerHelpers;
+
 /** Replaceable UI regions (MUI slots pattern). */
 export interface SchedulerSlots {
   event?: React.ComponentType<EventSlotProps>;
@@ -248,6 +270,11 @@ export interface SchedulerSlots {
   eventViewerSubtitle?: React.ComponentType<EventViewerSubtitleSlotProps>;
   eventViewerExtra?: React.ComponentType<EventViewerExtraSlotProps>;
   loadingOverlay?: React.ComponentType<LoadingOverlaySlotProps>;
+  cell?: React.ComponentType<CellSlotProps>;
+  dayHeader?: React.ComponentType<DayHeaderSlotProps>;
+  hourLabel?: React.ComponentType<HourLabelSlotProps>;
+  editor?: React.ComponentType<EditorSlotProps>;
+  resourceHeader?: React.ComponentType<ResourceHeaderSlotProps>;
 }
 
 export interface SchedulerSlotProps {
@@ -257,15 +284,11 @@ export interface SchedulerSlotProps {
   eventViewerSubtitle?: SlotPropsOf<EventViewerSubtitleSlotProps>;
   eventViewerExtra?: SlotPropsOf<EventViewerExtraSlotProps>;
   loadingOverlay?: SlotPropsOf<LoadingOverlaySlotProps>;
-}
-
-export interface SchedulerHelpers {
-  state: Record<string, StateItem>;
-  close(): void;
-  loading(status: boolean): void;
-  edited?: ProcessedEvent;
-  onConfirm(event: ProcessedEvent | ProcessedEvent[], action: EventActions): void;
-  [resourceKey: string]: unknown;
+  cell?: SlotPropsOf<CellSlotProps>;
+  dayHeader?: SlotPropsOf<DayHeaderSlotProps>;
+  hourLabel?: SlotPropsOf<HourLabelSlotProps>;
+  editor?: SlotPropsOf<EditorSlotProps>;
+  resourceHeader?: SlotPropsOf<ResourceHeaderSlotProps>;
 }
 export interface SchedulerProps {
   /**Min height of table
@@ -301,7 +324,7 @@ export interface SchedulerProps {
   events: ProcessedEvent[];
   /**
    * MUI-style slot components for replaceable UI regions
-   * (`event`, `eventViewer*`, `loadingOverlay`, …).
+   * (`event`, `cell`, `dayHeader`, `hourLabel`, `editor`, `resourceHeader`, …).
    */
   slots?: SchedulerSlots;
   /** Props (or ownerState callbacks) passed into each slot */
@@ -316,16 +339,12 @@ export interface SchedulerProps {
   onConfirm?(event: ProcessedEvent, action: EventActions): Promise<ProcessedEvent>;
   /**Async function triggered when delete event */
   onDelete?(deletedId: string | number): Promise<string | number | void>;
-  /**Override editor modal */
-  customEditor?(scheduler: SchedulerHelpers): React.ReactNode;
   /** if true, the viewer popover will be disabled globally */
   disableViewer?: boolean;
   /**Resources array to split event views with resources */
   resources: DefaultResource[];
   /**Map resources fields */
   resourceFields: ResourceFields;
-  /**Override header component of resource */
-  resourceHeaderComponent?(resource: DefaultResource): React.ReactNode;
   /** Triggered when resource tabs changes */
   onResourceChange?(resource: DefaultResource): void;
   /**Resource header view mode

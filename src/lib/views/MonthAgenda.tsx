@@ -20,7 +20,7 @@ const MonthAgenda = ({ events, resource }: Props) => {
     }),
     shallowEqual
   );
-  const { disableGoToDay, headRenderer } = month!;
+  const { disableGoToDay } = month!;
   const daysOfMonth = getDaysInMonth(selectedDate);
   const daysList = Array.from({ length: daysOfMonth }, (_, i) => i + 1);
 
@@ -46,7 +46,6 @@ const MonthAgenda = ({ events, resource }: Props) => {
             dayEvents={dayEvents}
             events={events}
             resource={resource}
-            headRenderer={headRenderer}
             disableGoToDay={disableGoToDay}
           />
         );
