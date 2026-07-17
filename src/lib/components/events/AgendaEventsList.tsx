@@ -12,7 +12,7 @@ import { EventSlotProps, ProcessedEvent } from "../../types";
 import { getHourFormat, isTimeZonedToday } from "../../helpers/generals";
 import useStore, { shallowEqual } from "../../hooks/useStore";
 import EventItemPopover from "./EventItemPopover";
-import { renderSlot, resolveSlotProps } from "../../slots/resolveSlot";
+import { renderSlot } from "../../slots/resolveSlot";
 
 interface AgendaEventsListProps {
   day: Date;
@@ -23,20 +23,10 @@ const AgendaEventsList = ({ day, events }: AgendaEventsListProps) => {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<ProcessedEvent>();
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const {
-    locale,
-    hourFormat,
-    eventRenderer,
-    onEventClick,
-    timeZone,
-    disableViewer,
-    slots,
-    slotProps,
-  } = useStore(
+  const { locale, hourFormat, onEventClick, timeZone, disableViewer, slots, slotProps } = useStore(
     (s) => ({
       locale: s.locale,
       hourFormat: s.hourFormat,
-      eventRenderer: s.eventRenderer,
       onEventClick: s.onEventClick,
       timeZone: s.timeZone,
       disableViewer: s.disableViewer,
@@ -75,15 +65,15 @@ const AgendaEventsList = ({ day, events }: AgendaEventsListProps) => {
             locale,
           });
 
-          const ownerState: EventSlotProps = {
-            event,
-            onClick: (e) => {
-              setSelectedEvent(event);
-              triggerViewer(e);
-            },
-          };
-
           if (slots?.event) {
+            const ownerState: EventSlotProps = {
+              event,
+              onClick: (e) => {
+                setSelectedEvent(event);
+                triggerViewer(e);
+              },
+            };
+
             return (
               <Fragment key={`${event.start.getTime()}_${event.end.getTime()}_${event.event_id}`}>
                 {renderSlot({
@@ -94,18 +84,6 @@ const AgendaEventsList = ({ day, events }: AgendaEventsListProps) => {
                 })}
               </Fragment>
             );
-          }
-
-          if (typeof eventRenderer === "function") {
-            const resolved = resolveSlotProps(slotProps?.event, ownerState);
-            const custom = eventRenderer({ ...ownerState, ...resolved });
-            if (custom !== null && custom !== undefined) {
-              return (
-                <Fragment key={`${event.start.getTime()}_${event.end.getTime()}_${event.event_id}`}>
-                  {custom}
-                </Fragment>
-              );
-            }
           }
 
           return (

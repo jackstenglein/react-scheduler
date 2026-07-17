@@ -8,7 +8,7 @@ import useStore, { shallowEqual } from "../../hooks/useStore";
 import useDragAttributes from "../../hooks/useDragAttributes";
 import EventItemPopover from "./EventItemPopover";
 import useEventPermissions from "../../hooks/useEventPermissions";
-import { renderSlot, resolveSlotProps } from "../../slots/resolveSlot";
+import { renderSlot } from "../../slots/resolveSlot";
 
 interface EventItemProps {
   event: ProcessedEvent;
@@ -23,11 +23,10 @@ interface EventItemProps {
 const EventItem = (props: EventItemProps) => {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const { slots, slotProps, eventRenderer } = useStore(
+  const { slots, slotProps } = useStore(
     (s) => ({
       slots: s.slots,
       slotProps: s.slotProps,
-      eventRenderer: s.eventRenderer,
     }),
     shallowEqual
   );
@@ -47,23 +46,23 @@ const EventItem = (props: EventItemProps) => {
   const onEventClick = useStore((s) => s.onEventClick);
   const disableViewer = useStore((s) => s.disableViewer);
 
-  const ownerState: EventSlotProps = {
-    event: props.event,
-    ...dragProps,
-    draggable: !!canDrag,
-    onClick: (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (!disableViewer) {
-        triggerViewer(e);
-      }
-      if (typeof onEventClick === "function") {
-        onEventClick(props.event);
-      }
-    },
-  };
-
   if (slots?.event) {
+    const ownerState: EventSlotProps = {
+      event: props.event,
+      ...dragProps,
+      draggable: !!canDrag,
+      onClick: (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!disableViewer) {
+          triggerViewer(e);
+        }
+        if (typeof onEventClick === "function") {
+          onEventClick(props.event);
+        }
+      },
+    };
+
     return (
       <Fragment>
         {renderSlot({
@@ -75,23 +74,6 @@ const EventItem = (props: EventItemProps) => {
         <EventItemPopover anchorEl={anchorEl} event={props.event} onTriggerViewer={triggerViewer} />
       </Fragment>
     );
-  }
-
-  if (typeof eventRenderer === "function") {
-    const resolved = resolveSlotProps(slotProps?.event, ownerState);
-    const custom = eventRenderer({ ...ownerState, ...resolved });
-    if (custom !== null && custom !== undefined) {
-      return (
-        <Fragment>
-          {custom}
-          <EventItemPopover
-            anchorEl={anchorEl}
-            event={props.event}
-            onTriggerViewer={triggerViewer}
-          />
-        </Fragment>
-      );
-    }
   }
 
   return (

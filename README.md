@@ -58,21 +58,17 @@ All props are _optional_
 | navigationPickerProps | CalendarPickerProps for top bar date navigation. Ref [CalendarPicker API](https://mui.com/x/api/date-pickers/calendar-picker/#main-content)
 | disableViewNavigator | boolean. Show/Hide top bar date View navigator. <br>_Default_: `false`
 | events | Array of ProcessedEvent. <br>_Default_: [] <br> <pre>type ProcessedEvent = {<br>event*id: number or string;<br>title: string;<br>subtitle?: string;<br>start: Date;<br>end: Date;<br>disabled?: boolean;<br>recurring: RRule;<br>color?: string or "palette.path";<br>textColor?: string or "palette.path";<br>editable?: boolean;<br>deletable?: boolean;<br>draggable?: boolean;<br>allDay?: boolean;<br>agendaAvatar?: React.ReactElement \| string<br>sx?: Mui sx prop<br>} </pre>
-| eventRenderer | Function(event:ProcessedEvent): React.ReactNode.<br> A function that overrides the event item render function, see demo \_Custom Event Renderer* below
+| slots | Object. MUI-style slot components for replaceable UI regions. Keys: `event`, `eventViewer`, `eventViewerTitle`, `eventViewerSubtitle`, `eventViewerExtra`, `loadingOverlay`. Each value is a React component that receives the slot’s owner state as props.
+| slotProps | Object. Props (or `(ownerState) => props` callbacks) passed into each slot. Merged on top of the owner state.
 | editable | boolean. If `true`, the scheduler cell click will not open the editor, and the event item will not show the edit button, this is applied to all events, and can be overridden in each event property, see `ProcessedEvent` type.
 | deletable | boolean. Whether the event item will show the delete button, this is applied to all events, and can be overridden in each event property, see `ProcessedEvent` type.
 | draggable | boolean. Whether activate drag&drop for the events, this is applied to all events, and can be overridden in each event property, see `ProcessedEvent` type.
 | getRemoteEvents | Function(RemoteQuery). Return promise of array of events. Can be used as a callback to fetch events by parent component or fetch.<br><pre>type RemoteQuery = { <br> start: Date;<br> end: Date;<br> view: "day" \| "week" \| "month";<br>}</pre>
 | fields | Array of extra fields with configurations. <br> Example: <pre> { <br> name: "description", <br> type: "input" , <br> config: { label: "Description", required: true, min: 3, email: true, variant: "outlined", ....<br>}</pre>
 | loading | boolean. Loading state of the calendar table
-| loadingComponent | Custom component to override the default `CircularProgress`
 | onConfirm | Function(event, action). Return promise with the new added/edited event use with remote data. <br> _action_: `add` | `edit`
 | onDelete | Function(id) Return promise with the deleted event id to use with remote data.
 | customEditor | Function(scheduler). Override editor modal. <br> Provided prop _scheduler_ object with helper props: <br> <pre>{<br>state: state obj, <br>close(): void<br>loading(status: boolean): void<br>edited?: ProcessedEvent<br>onConfirm(event: ProcessedEvent, action:EventActions): void<br>}</pre>
-| customViewer | Function(event: ProcessedEvent, close: () => void). Used to render fully customized content of the event popper. If used, `viewerExtraComponent` & `viewerTitleComponent` will be ignored
-| viewerExtraComponent | Function(fields, event) OR Component. Additional component in event viewer popper
-| viewerTitleComponent | Function(event). Helper function to render custom title in event popper
-| viewerSubtitleComponent | Function(event). Helper function to render custom subtitle in event popper
 | disableViewer | boolean. If true, the viewer popover will be disabled globally
 | resources | Array. Resources array to split event views with resources <br>_Example_ <pre>{<br>assignee: 1,<br>text: "User One", <br>subtext: "Sales Manager", <br>avatar: "https://picsum.photos/200/300", <br>color: "#ab2d2d",<br> }</pre>
 | resourceFields | Object. Map the resources correct fields. <br>_Example_:<pre>{<br>idField: "admin*id", <br>textField: "title", <br>subTextField: "mobile",<br>avatarField: "title", <br>colorField: "background",<br>}</pre>
@@ -147,7 +143,7 @@ consider looking inside `SchedulerRef` type to see all fields & methods availabl
 - [Editor/Viewer Override](https://codesandbox.io/s/customeditor-tt2pf)
 - [Resources/View Mode](https://codesandbox.io/s/resources-7wlcy)
 - [Custom Cell Action](https://codesandbox.io/s/custom-cell-action-n02dv)
-- [Custom Event Renderer](https://codesandbox.io/s/custom-event-renderer-rkf4xw)
+- [Custom Event Slot](https://codesandbox.io/s/custom-event-renderer-rkf4xw)
 
 ### Todos
 

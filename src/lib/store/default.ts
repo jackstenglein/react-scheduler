@@ -123,7 +123,6 @@ export const defaultProps = (props: Partial<SchedulerProps>) => {
     customEditor: undefined,
     onConfirm: undefined,
     onDelete: undefined,
-    viewerExtraComponent: undefined,
     resources: [],
     resourceHeaderComponent: undefined,
     resourceViewMode: resourceViewMode || "default",

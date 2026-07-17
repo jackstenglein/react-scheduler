@@ -240,10 +240,7 @@ export type LoadingOverlaySlotProps = {
   loadingLabel: string;
 };
 
-/**
- * Replaceable UI regions (MUI slots pattern).
- * Prefer these over legacy `*Renderer` / `*Component` props.
- */
+/** Replaceable UI regions (MUI slots pattern). */
 export interface SchedulerSlots {
   event?: React.ComponentType<EventSlotProps>;
   eventViewer?: React.ComponentType<EventViewerSlotProps>;
@@ -303,56 +300,24 @@ export interface SchedulerProps {
   /**Events to display */
   events: ProcessedEvent[];
   /**
-   * MUI-style slot components for replaceable UI regions.
-   * Prefer over legacy `eventRenderer` / `*Component` props.
+   * MUI-style slot components for replaceable UI regions
+   * (`event`, `eventViewer*`, `loadingOverlay`, …).
    */
   slots?: SchedulerSlots;
   /** Props (or ownerState callbacks) passed into each slot */
   slotProps?: SchedulerSlotProps;
-  /**
-   * Custom event render method
-   * @deprecated Prefer `slots.event`
-   */
-  eventRenderer?: (props: EventRendererProps) => React.ReactNode | null;
   /**Async function to load remote data with current view data. */
   getRemoteEvents?(params: RemoteQuery): Promise<ProcessedEvent[] | void>;
   /**Custom additional fields with it's settings */
   fields: FieldProps[];
   /**Table loading state */
   loading?: boolean;
-  /**
-   * Custom loading component
-   * @deprecated Prefer `slots.loadingOverlay`
-   */
-  loadingComponent?: React.ReactNode;
   /**Async function triggered when add/edit event */
   onConfirm?(event: ProcessedEvent, action: EventActions): Promise<ProcessedEvent>;
   /**Async function triggered when delete event */
   onDelete?(deletedId: string | number): Promise<string | number | void>;
   /**Override editor modal */
   customEditor?(scheduler: SchedulerHelpers): React.ReactNode;
-  /**
-   * Custom viewer/popper component. If used, title/subtitle/extra slots are ignored
-   * @deprecated Prefer `slots.eventViewer`
-   */
-  customViewer?(event: ProcessedEvent, close: () => void): React.ReactNode;
-  /**
-   * Additional component in event viewer popper
-   * @deprecated Prefer `slots.eventViewerExtra`
-   */
-  viewerExtraComponent?:
-    | React.ReactNode
-    | ((fields: FieldProps[], event: ProcessedEvent) => React.ReactNode);
-  /**
-   * Override viewer title component
-   * @deprecated Prefer `slots.eventViewerTitle`
-   */
-  viewerTitleComponent?(event: ProcessedEvent): React.ReactNode;
-  /**
-   * Override viewer subtitle component
-   * @deprecated Prefer `slots.eventViewerSubtitle`
-   */
-  viewerSubtitleComponent?(event: ProcessedEvent): React.ReactNode;
   /** if true, the viewer popover will be disabled globally */
   disableViewer?: boolean;
   /**Resources array to split event views with resources */
