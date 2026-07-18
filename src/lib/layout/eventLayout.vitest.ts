@@ -129,7 +129,7 @@ describe("computeWeekLayout", () => {
         event_id: "allday",
         allDay: true,
         start: new Date(2025, 0, 15, 0, 0),
-        end: new Date(2025, 0, 16, 0, 0),
+        end: new Date(2025, 0, 15, 23, 59),
       }),
     ];
 
@@ -142,10 +142,111 @@ describe("computeWeekLayout", () => {
 
     const wed = layout.find((d) => d.date.getDate() === 15);
     expect(wed?.timed.map((e) => e.event_id)).toEqual(["timed"]);
-    expect(wed?.allDay.map((e) => e.event_id)).toEqual(["allday"]);
+    expect(wed?.allDay.map((p) => p.event.event_id)).toEqual(["allday"]);
+    expect(wed?.allDay[0]?.span).toBe(1);
     expect(wed?.timedPlacements).toHaveLength(1);
   });
+
+  it("spans multi-day all-day events across visible columns", () => {
+    // Mon Jan 13 – Sun Jan 19, 2025
+    const weekStart = startOfWeek(new Date(2025, 0, 15), { weekStartsOn: 1 });
+    const daysList = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    const events = [
+      makeEvent({
+        event_id: "span3",
+        title: "Wed–Fri",
+        allDay: true,
+        start: new Date(2025, 0, 15, 0, 0),
+        end: new Date(2025, 0, 17, 23, 59),
+      }),
+    ];
+
+    const layout = computeWeekLayout({
+      allDaySourceEvents: events,
+      timedSourceEvents: events,
+      daysList,
+      timedLayout: { startHour: 9, endHour: 17, minuteHeight: 1, direction: "ltr" },
+    });
+
+    const byDate = Object.fromEntries(
+      layout.map((d) => [
+        formatDay(d.date),
+        d.allDay.map((p) => ({ id: p.event.event_id, span: p.span })),
+      ])
+    );
+
+    expect(byDate["2025-01-15"]).toEqual([{ id: "span3", span: 3 }]);
+    expect(byDate["2025-01-16"]).toEqual([]);
+    expect(byDate["2025-01-17"]).toEqual([]);
+  });
+
+  it("clamps multi-day events that start before the visible week", () => {
+    const weekStart = startOfWeek(new Date(2025, 0, 15), { weekStartsOn: 1 }); // Mon 13
+    const daysList = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    const events = [
+      makeEvent({
+        event_id: "carry",
+        allDay: true,
+        start: new Date(2025, 0, 10, 0, 0), // previous Friday
+        end: new Date(2025, 0, 15, 23, 59), // Wednesday
+      }),
+    ];
+
+    const layout = computeWeekLayout({
+      allDaySourceEvents: events,
+      timedSourceEvents: [],
+      daysList,
+      timedLayout: { startHour: 9, endHour: 17, minuteHeight: 1, direction: "ltr" },
+    });
+
+    const mon = layout[0];
+    expect(mon.allDay).toHaveLength(1);
+    expect(mon.allDay[0].event.event_id).toBe("carry");
+    expect(mon.allDay[0].span).toBe(3); // Mon–Wed
+    expect(mon.allDay[0].hasPrev).toBe(true);
+    expect(mon.allDay[0].hasNext).toBe(false);
+    expect(layout.slice(1).every((d) => d.allDay.length === 0)).toBe(true);
+  });
+
+  it("stacks overlapping multi-day events into different slots", () => {
+    const weekStart = startOfWeek(new Date(2025, 0, 15), { weekStartsOn: 1 });
+    const daysList = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    const events = [
+      makeEvent({
+        event_id: "long",
+        allDay: true,
+        start: new Date(2025, 0, 15, 0, 0),
+        end: new Date(2025, 0, 17, 23, 59),
+      }),
+      makeEvent({
+        event_id: "short",
+        allDay: true,
+        start: new Date(2025, 0, 15, 0, 0),
+        end: new Date(2025, 0, 16, 23, 59),
+      }),
+    ];
+
+    const layout = computeWeekLayout({
+      allDaySourceEvents: events,
+      timedSourceEvents: [],
+      daysList,
+      timedLayout: { startHour: 9, endHour: 17, minuteHeight: 1, direction: "ltr" },
+    });
+
+    const wed = layout.find((d) => d.date.getDate() === 15)!;
+    expect(wed.allDay).toHaveLength(2);
+    const slots = wed.allDay.map((p) => p.slot).sort();
+    expect(slots).toEqual([0, 1]);
+    expect(wed.allDay.find((p) => p.event.event_id === "long")?.span).toBe(3);
+    expect(wed.allDay.find((p) => p.event.event_id === "short")?.span).toBe(2);
+  });
 });
+
+function formatDay(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate()
+  ).padStart(2, "0")}`;
+}
 
 describe("computeMonthGridEvents", () => {
   it("indexes cell events by yyyy-MM-dd", () => {

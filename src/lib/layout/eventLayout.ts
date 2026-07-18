@@ -4,6 +4,8 @@ import {
   eachDayOfInterval,
   endOfDay,
   format,
+  isAfter,
+  isBefore,
   isSameDay,
   isWithinInterval,
   startOfDay,
@@ -37,9 +39,22 @@ export type TimedEventPlacement = {
   zIndex: number;
 };
 
+/** All-day / multi-day bar placed on the first visible day of its span. */
+export type AllDayEventPlacement = {
+  event: ProcessedEvent;
+  /** Number of visible day columns this bar spans within the current daysList */
+  span: number;
+  /** Event continues from before the visible range */
+  hasPrev: boolean;
+  /** Event continues past the visible range */
+  hasNext: boolean;
+  /** Vertical stack index among overlapping all-day events */
+  slot: number;
+};
+
 export type WeekDayBucket = {
   date: Date;
-  allDay: ProcessedEvent[];
+  allDay: AllDayEventPlacement[];
   timed: ProcessedEvent[];
   timedPlacements: TimedEventPlacement[];
 };
@@ -141,29 +156,76 @@ export function layoutTimedEvents(
 }
 
 /**
- * All-day / multi-day events for a week grid, keyed by first visible day column.
+ * All-day / multi-day events for a week grid.
+ * Each event is placed only on the first visible day of its intersection with
+ * `daysList`, with `span` set so the bar can stretch across following columns.
  */
 export function getAllDayEventsByDay(
   events: ProcessedEvent[],
   daysList: Date[],
   timeZone?: string
-): ProcessedEvent[][] {
-  const result: ProcessedEvent[][] = daysList.map(() => []);
+): AllDayEventPlacement[][] {
+  const result: AllDayEventPlacement[][] = daysList.map(() => []);
+  if (!daysList.length) {
+    return result;
+  }
+
+  const weekStart = startOfDay(daysList[0]);
+  const weekEnd = endOfDay(daysList[daysList.length - 1]);
+
+  const candidates: ProcessedEvent[] = [];
   for (let event of events) {
     event = convertEventTimeZone(event, timeZone);
-    const allDay = event.allDay || differenceInDaysOmitTime(event.start, event.end) > 0;
-    if (!allDay) {
+    const isAllDay = event.allDay || differenceInDaysOmitTime(event.start, event.end) > 0;
+    if (!isAllDay) {
       continue;
     }
 
+    const eventStart = startOfDay(event.start);
+    const eventEnd = endOfDay(event.end);
+    const overlapsWeek = !isAfter(eventStart, weekEnd) && !isBefore(eventEnd, weekStart);
+    if (!overlapsWeek) {
+      continue;
+    }
+    candidates.push(event);
+  }
+
+  const slots = computeEventSlots(sortEventsByTheLengthest(candidates));
+
+  for (const event of candidates) {
+    const eventStart = startOfDay(event.start);
+    const eventEnd = endOfDay(event.end);
+
+    let startIndex = -1;
     for (let i = 0; i < daysList.length; i++) {
-      const day = daysList[i];
-      if (isWithinInterval(day, { start: startOfDay(event.start), end: endOfDay(event.end) })) {
-        result[i].push(event);
+      if (isWithinInterval(daysList[i], { start: eventStart, end: eventEnd })) {
+        startIndex = i;
         break;
       }
     }
+    if (startIndex < 0) {
+      continue;
+    }
+
+    let span = 0;
+    for (let i = startIndex; i < daysList.length; i++) {
+      if (isWithinInterval(daysList[i], { start: eventStart, end: eventEnd })) {
+        span += 1;
+      } else {
+        break;
+      }
+    }
+
+    const dayKey = format(daysList[startIndex], "yyyy-MM-dd");
+    result[startIndex].push({
+      event,
+      span,
+      hasPrev: isBefore(eventStart, weekStart),
+      hasNext: isAfter(eventEnd, weekEnd),
+      slot: slots[dayKey]?.[event.event_id] ?? 0,
+    });
   }
+
   return result;
 }
 

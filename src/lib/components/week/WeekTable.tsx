@@ -2,11 +2,12 @@ import { Fragment, useMemo } from "react";
 import useStore, { shallowEqual } from "../../hooks/useStore";
 import { TableGrid } from "../../styles/styles";
 import { getHourFormat } from "../../helpers/generals";
+import { MULTI_DAY_EVENT_HEIGHT } from "../../helpers/constants";
 import { DefaultResource, ProcessedEvent } from "../../types";
 import useSyncScroll from "../../hooks/useSyncScroll";
-import { addMinutes, endOfDay, format, isBefore, isToday, startOfDay } from "date-fns";
+import { addMinutes, endOfDay, format, isToday, startOfDay } from "date-fns";
 import EventItem from "../events/EventItem";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import TodayEvents from "../events/TodayEvents";
 import Cell from "../common/Cell";
 import { DateButton } from "../common/DateButton";
@@ -21,6 +22,9 @@ type Props = {
   resource?: DefaultResource;
   resourcedEvents: ProcessedEvent[];
 };
+
+const ALL_DAY_ROW_PAD = 8;
+const ALL_DAY_SLOT_GAP = 2;
 
 const WeekTable = ({
   daysList,
@@ -81,6 +85,19 @@ const WeekTable = ({
     [events, resourcedEvents, daysList, timeZone, startHour, endHour, minutesHeight, direction]
   );
 
+  const allDayRowHeight = useMemo(() => {
+    let maxSlots = 0;
+    for (const day of dayLayouts) {
+      for (const placement of day.allDay) {
+        maxSlots = Math.max(maxSlots, placement.slot + 1);
+      }
+    }
+    if (maxSlots === 0) {
+      return 34;
+    }
+    return maxSlots * (MULTI_DAY_EVENT_HEIGHT + ALL_DAY_SLOT_GAP) + ALL_DAY_ROW_PAD;
+  }, [dayLayouts]);
+
   return (
     <>
       {/* Header days */}
@@ -108,7 +125,7 @@ const WeekTable = ({
             borderTop: "1px solid",
             borderRight: "1px solid",
             borderColor: "divider",
-            minHeight: "34px",
+            minHeight: allDayRowHeight,
           }}
         >
           <Typography
@@ -124,13 +141,14 @@ const WeekTable = ({
         {dayLayouts.map(({ date, allDay }, i) => (
           <Box
             key={i}
+            data-testid="week-allday-cell"
             sx={{
               borderTop: "1px solid",
               borderLeft: i === 0 ? undefined : "1px solid",
               borderColor: "divider",
-              paddingY: 0.5,
-              paddingRight: 0.25,
               position: "relative",
+              minHeight: allDayRowHeight,
+              overflow: "visible",
             }}
           >
             <Box sx={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }}>
@@ -144,18 +162,25 @@ const WeekTable = ({
               />
             </Box>
 
-            <Stack sx={{ gap: 0.25 }}>
-              {allDay.map((event) => (
-                <EventItem
-                  key={event.event_id}
-                  event={event}
-                  multiday
-                  hasPrev={isBefore(event.start, startOfDay(date))}
-                  hasNext={isBefore(endOfDay(date), event.end)}
-                  sx={{ width: "unset" }}
-                />
-              ))}
-            </Stack>
+            {allDay.map(({ event, span, hasPrev, hasNext, slot }) => (
+              <div
+                key={event.event_id}
+                data-testid={`week-allday-event-${event.event_id}`}
+                data-span={span}
+                data-slot={slot}
+                style={{
+                  position: "absolute",
+                  zIndex: 1,
+                  top: slot * (MULTI_DAY_EVENT_HEIGHT + ALL_DAY_SLOT_GAP) + ALL_DAY_SLOT_GAP,
+                  left: 0,
+                  width: `${100 * span}%`,
+                  height: MULTI_DAY_EVENT_HEIGHT,
+                  overflow: "hidden",
+                }}
+              >
+                <EventItem event={event} multiday hasPrev={hasPrev} hasNext={hasNext} />
+              </div>
+            ))}
           </Box>
         ))}
       </TableGrid>
