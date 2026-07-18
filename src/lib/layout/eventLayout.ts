@@ -15,6 +15,7 @@ import {
   convertEventTimeZone,
   differenceInDaysOmitTime,
   filterTodayEvents,
+  getEventOccurrenceKey,
   getRecurrencesForDate,
   getResourcedEvents,
   sortEventsByTheEarliest,
@@ -120,7 +121,7 @@ export function layoutTimedEvents(
   todayEvents: ProcessedEvent[],
   { startHour, endHour, minuteHeight }: TimedLayoutOptions
 ): TimedEventPlacement[] {
-  const crossingIds: Array<number | string> = [];
+  const renderedKeys: string[] = [];
   const maxHeight = (endHour * 60 - startHour * 60) * minuteHeight;
   const calendarStartInMins = startHour * 60;
 
@@ -132,8 +133,10 @@ export function layoutTimedEvents(
     const top = minutesFromTop * minuteHeight;
 
     const crossingEvents = traversCrossingEvents(todayEvents, event);
-    const alreadyRendered = crossingEvents.filter((e) => crossingIds.includes(e.event_id));
-    crossingIds.push(event.event_id);
+    const alreadyRendered = crossingEvents.filter((e) =>
+      renderedKeys.includes(getEventOccurrenceKey(e))
+    );
+    renderedKeys.push(getEventOccurrenceKey(event));
 
     const width =
       alreadyRendered.length > 0

@@ -113,6 +113,59 @@ describe("layoutTimedEvents", () => {
     expect(placements[1].horizontalOffset).toBe("50%");
     expect(placements[1].top).toBe(60);
   });
+
+  it("does not stack a later recurring occurrence on top of an earlier one when overlapping another event", () => {
+    // Mirrors demo events 10 (hourly ×3) and 11 (16:00–16:30): earlier
+    // occurrences of the same event_id must not make both overlapping bars
+    // think a column was already taken.
+    const events = [
+      makeEvent({
+        event_id: 10,
+        title: "Hourly 14:15",
+        recurrenceId: 0,
+        start: new Date(2025, 0, 15, 14, 15),
+        end: new Date(2025, 0, 15, 14, 45),
+      }),
+      makeEvent({
+        event_id: 10,
+        title: "Hourly 15:15",
+        recurrenceId: 1,
+        start: new Date(2025, 0, 15, 15, 15),
+        end: new Date(2025, 0, 15, 15, 45),
+      }),
+      makeEvent({
+        event_id: 11,
+        title: "Daily 16:00",
+        start: new Date(2025, 0, 15, 16, 0),
+        end: new Date(2025, 0, 15, 16, 30),
+      }),
+      makeEvent({
+        event_id: 10,
+        title: "Hourly 16:15",
+        recurrenceId: 2,
+        start: new Date(2025, 0, 15, 16, 15),
+        end: new Date(2025, 0, 15, 16, 45),
+      }),
+    ];
+
+    const placements = layoutTimedEvents(events, {
+      ...opts,
+      startHour: 14,
+      endHour: 18,
+    });
+
+    const daily = placements.find((p) => p.event.event_id === 11)!;
+    const hourlyLate = placements.find(
+      (p) => p.event.event_id === 10 && p.event.recurrenceId === 2
+    )!;
+
+    expect(daily.horizontalOffset).toBe("");
+    expect(daily.width).toBe("98%");
+    expect(hourlyLate.horizontalOffset).toBe("50%");
+    expect(hourlyLate.width).toMatch(/calc\((100% - 51%|49%)\)/);
+    // Regression: both must not share the same offset (fully stacked).
+    expect(daily.horizontalOffset).not.toBe(hourlyLate.horizontalOffset);
+  });
 });
 
 describe("computeWeekLayout", () => {

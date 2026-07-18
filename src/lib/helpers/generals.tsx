@@ -92,13 +92,19 @@ export const getResourcedEvents = (
   return resourcedEvents;
 };
 
+export const getEventOccurrenceKey = (event: ProcessedEvent) => {
+  const recurrenceId = (event as RecurrenceEvent).recurrenceId;
+  return recurrenceId == null ? String(event.event_id) : `${event.event_id}:${recurrenceId}`;
+};
+
 export const traversCrossingEvents = (
   todayEvents: ProcessedEvent[],
   event: ProcessedEvent
 ): ProcessedEvent[] => {
+  const selfKey = getEventOccurrenceKey(event);
   return todayEvents.filter(
     (e) =>
-      e.event_id !== event.event_id &&
+      getEventOccurrenceKey(e) !== selfKey &&
       (isWithinInterval(addMinutes(event.start, 1), {
         start: e.start,
         end: e.end,
