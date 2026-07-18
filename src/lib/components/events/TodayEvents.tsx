@@ -48,19 +48,18 @@ const TodayEvents = ({
       )}
 
       {placements.map((placement) => (
-        <div
+        <EventItem
           key={`${placement.event.event_id}/${placement.event.recurrenceId || ""}`}
-          style={{
+          event={placement.event}
+          sx={{
             position: "absolute",
             height: placement.height,
             top: placement.top,
-            width: placement.width,
+            width: `calc(${placement.width} - 4px)`,
             zIndex: placement.zIndex,
             [insetKey]: placement.horizontalOffset,
           }}
-        >
-          <EventItem event={placement.event} />
-        </div>
+        />
       ))}
     </Fragment>
   );

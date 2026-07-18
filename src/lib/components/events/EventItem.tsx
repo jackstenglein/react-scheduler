@@ -81,7 +81,7 @@ const EventItem = (props: EventItemProps) => {
       {props.variant === "text" && !props.multiday ? (
         <EventText {...props} triggerViewer={triggerViewer} />
       ) : (
-        <EventPaper {...props} triggerViewer={triggerViewer} />
+        <EventPaper {...props} triggerViewer={triggerViewer} selected={Boolean(anchorEl)} />
       )}
 
       {/* Viewer */}
@@ -169,8 +169,10 @@ function EventText(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Ele
   );
 }
 
-function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Element>) => void }) {
-  const { event, triggerViewer, hasPrev, hasNext } = props;
+function EventPaper(
+  props: EventItemProps & { selected?: boolean; triggerViewer: (el?: MouseEvent<Element>) => void }
+) {
+  const { event, triggerViewer, hasPrev, hasNext, selected } = props;
   const theme = useTheme();
   const { onEventClick, disableViewer } = useStore(
     (s) => ({
@@ -193,7 +195,7 @@ function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<El
         color: event.disabled
           ? "#808080"
           : theme.palette.getContrastText(
-              event.color || (theme.vars || theme).palette.primary.contrastText
+              event.color || (theme.vars || theme).palette.primary.main
             ),
         mx: 0.25,
         clipPath:
@@ -206,6 +208,11 @@ function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<El
                 : undefined,
         ...(event.sx || {}),
         ...(props.sx || {}),
+        ...(selected
+          ? {
+              zIndex: (theme.vars || theme).zIndex.modal - 2,
+            }
+          : {}),
       }}
       {...dragProps}
       draggable={canDrag}

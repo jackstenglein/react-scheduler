@@ -105,7 +105,7 @@ export const TableGrid = styled("div")<{
   position: sticky === "1" ? "sticky" : "relative",
   // Offset below the sticky navigation bar
   top: sticky === "1" ? 40.5 : undefined,
-  zIndex: sticky === "1" ? 99 : undefined,
+  zIndex: sticky === "1" ? theme.zIndex.modal - 1 : undefined,
   [theme.breakpoints.down("sm")]: {
     gridTemplateColumns:
       +indent > 0
@@ -152,37 +152,6 @@ export const EventItemPaper = styled(Paper)<{ disabled?: boolean }>(({ disabled 
     textAlign: "left",
     "& > div": {
       height: "100%",
-    },
-  },
-}));
-
-export const PopperInner = styled("div")(({ theme }) => ({
-  maxWidth: "100%",
-  width: 400,
-  "& > div": {
-    padding: "5px 10px",
-    "& .rs__popper_actions": {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      "& .MuiIconButton-root": {
-        color: (theme.vars || theme).palette.primary.contrastText,
-      },
-    },
-  },
-}));
-
-export const EventActions = styled("div")(({ theme }) => ({
-  display: "inherit",
-  "& .MuiIconButton-root": {
-    color: (theme.vars || theme).palette.primary.contrastText,
-  },
-  "& .MuiButton-root": {
-    "&.delete": {
-      color: (theme.vars || theme).palette.error.main,
-    },
-    "&.cancel": {
-      color: (theme.vars || theme).palette.action.disabled,
     },
   },
 }));

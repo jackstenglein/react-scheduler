@@ -1,8 +1,7 @@
 import DeleteRounded from "@mui/icons-material/DeleteRounded";
 import EditRounded from "@mui/icons-material/EditRounded";
-import { Button, Grow, IconButton, Slide } from "@mui/material";
+import { Box, Button, Grow, IconButton, Slide } from "@mui/material";
 import { useState } from "react";
-import { EventActions as Actions } from "../../styles/styles";
 import { ProcessedEvent } from "../../types";
 import useStore from "../../hooks/useStore";
 import useEventPermissions from "../../hooks/useEventPermissions";
@@ -27,16 +26,16 @@ const EventActions = ({ event, onDelete, onEdit }: Props) => {
   const { canEdit, canDelete } = useEventPermissions(event);
 
   return (
-    <Actions>
+    <Box sx={{ display: "inherit" }}>
       <Grow in={!deleteConfirm} exit={false} timeout={400} unmountOnExit>
         <div>
           {canEdit && (
-            <IconButton size="small" onClick={onEdit}>
+            <IconButton size="small" onClick={onEdit} color="inherit">
               <EditRounded />
             </IconButton>
           )}
           {canDelete && (
-            <IconButton size="small" onClick={handleDelete}>
+            <IconButton size="small" onClick={handleDelete} color="inherit">
               <DeleteRounded />
             </IconButton>
           )}
@@ -50,15 +49,20 @@ const EventActions = ({ event, onDelete, onEdit }: Props) => {
         exit={false}
       >
         <div>
-          <Button className="delete" size="small" onClick={handleDelete}>
+          <Button className="delete" size="small" onClick={handleDelete} color="error">
             {translations.form.delete.toUpperCase()}
           </Button>
-          <Button className="cancel" size="small" onClick={() => setDeleteConfirm(false)}>
+          <Button
+            className="cancel"
+            size="small"
+            onClick={() => setDeleteConfirm(false)}
+            color="inherit"
+          >
             {translations.form.cancel.toUpperCase()}
           </Button>
         </div>
       </Slide>
-    </Actions>
+    </Box>
   );
 };
 

@@ -2,7 +2,6 @@ import { MouseEvent } from "react";
 import { Box, IconButton, Popover, Typography, useTheme } from "@mui/material";
 import useStore, { shallowEqual } from "../../hooks/useStore";
 import { EventViewerSlotProps, ProcessedEvent } from "../../types";
-import { PopperInner } from "../../styles/styles";
 import EventActions from "./Actions";
 import { differenceInDaysOmitTime, getHourFormat } from "../../helpers/generals";
 import EventNoteRoundedIcon from "@mui/icons-material/EventNoteRounded";
@@ -95,11 +94,16 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
       onClose={close}
       anchorOrigin={{
         vertical: "center",
-        horizontal: "center",
+        horizontal: "left",
       }}
       transformOrigin={{
-        vertical: "top",
-        horizontal: "center",
+        vertical: "center",
+        horizontal: "right",
+      }}
+      slotProps={{
+        paper: {
+          sx: { transform: `translateX(-4px) !important` },
+        },
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -113,19 +117,20 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
           defaultElement: null,
         })
       ) : (
-        <PopperInner>
+        <Box sx={{ maxWidth: "100%", width: 400 }}>
           <Box
             sx={{
+              padding: "5px 10px",
               bgcolor: event.color || (theme.vars || theme).palette.primary.main,
-              color: (theme.vars || theme).palette.primary.contrastText,
+              color: theme.palette.getContrastText(
+                event.color || (theme.vars || theme).palette.primary.main
+              ),
             }}
           >
-            <div className="rs__popper_actions">
-              <div>
-                <IconButton size="small" onClick={close}>
-                  <ClearRoundedIcon color="disabled" />
-                </IconButton>
-              </div>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <IconButton size="small" onClick={close} color="inherit">
+                <ClearRoundedIcon />
+              </IconButton>
               <EventActions
                 event={event}
                 onDelete={handleDelete}
@@ -138,7 +143,7 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
                   }
                 }}
               />
-            </div>
+            </Box>
             {renderSlot({
               slot: slots?.eventViewerTitle,
               slotProps: slotProps?.eventViewerTitle,
@@ -194,7 +199,7 @@ const EventItemPopover = ({ anchorEl, event, onTriggerViewer }: Props) => {
               defaultElement: null,
             })}
           </div>
-        </PopperInner>
+        </Box>
       )}
     </Popover>
   );
