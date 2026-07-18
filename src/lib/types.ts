@@ -418,10 +418,6 @@ export interface SchedulerProps {
    */
   onViewChange?(view: View, agenda?: boolean): void;
   /**
-   * If true, the navigation controller bar will be sticky
-   */
-  stickyNavigation?: boolean;
-  /**
    * Overrides the default behavior of more events button
    */
   onClickMore?(date: Date, gotToDay: (date: Date) => void): void;

@@ -28,7 +28,6 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
     fields,
     locale,
     hourFormat,
-    stickyNavigation,
     timeZone,
     onClickMore,
     slots,
@@ -44,7 +43,6 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
       fields: s.fields,
       locale: s.locale,
       hourFormat: s.hourFormat,
-      stickyNavigation: s.stickyNavigation,
       timeZone: s.timeZone,
       onClickMore: s.onClickMore,
       slots: s.slots,
@@ -189,13 +187,7 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
   return (
     <>
       {/* Header Days */}
-      <TableGrid
-        days={daysList.length}
-        ref={headersRef}
-        indent="0"
-        sticky="1"
-        stickyNavigation={stickyNavigation}
-      >
+      <TableGrid days={daysList.length} ref={headersRef} indent="0" sticky="1">
         {daysList.map((date, i) => (
           <Typography
             key={i}

@@ -85,7 +85,6 @@ All props are _optional_
 | onCellClick | Function(start: Date, end: Date, resourceKey?: string, resourceVal?: string | number): void. Triggered when a cell in the grid is clicked
 | onSelectedDateChange | Function(date: Date): void. Triggered when the `selectedDate` prop changes by navigation date picker or `today` button
 | onViewChange | Function(view: View, agenda?: boolean): void. Triggered when navigation view changes
-| stickyNavigation | If `true`, the navigation controller bar will be sticky
 | onClickMore | Function(date: Date, goToDay: Function(date: Date): void): void. Triggered when the "More..." button is clicked, it receives the date and a `goToDay` function that shows a day view for a specfic date.
 
 ### SchedulerRef

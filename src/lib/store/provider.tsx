@@ -43,7 +43,6 @@ const CONTROLLED_KEYS = [
   "day",
   "agenda",
   "alwaysShowAgendaDays",
-  "stickyNavigation",
   "navigation",
   "disableViewNavigator",
   "dialogMaxWidth",

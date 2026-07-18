@@ -25,7 +25,6 @@ const Navigation = () => {
     disableViewNavigator,
     onSelectedDateChange,
     onViewChange,
-    stickyNavigation,
     timeZone,
     agenda,
     toggleAgenda,
@@ -88,7 +87,7 @@ const Navigation = () => {
   if (!navigation && disableViewNavigator) return null;
 
   return (
-    <NavigationDiv sticky={stickyNavigation ? "1" : "0"}>
+    <NavigationDiv sticky="1">
       <div data-testid="date-navigator">{navigation && renderDateSelector()}</div>
 
       <div

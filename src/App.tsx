@@ -32,7 +32,6 @@ function App() {
           step: 60,
           navigation: true,
         }}
-        // events={generateRandomEvents(200)}
       />
     </Box>
   );

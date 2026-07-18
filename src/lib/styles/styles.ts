@@ -90,16 +90,16 @@ export const AgendaDiv = styled("div")(({ theme }) => ({
 export const TableGrid = styled("div")<{
   days: number;
   sticky?: string;
-  stickyNavigation?: boolean;
   indent?: string;
-}>(({ days, sticky = "0", stickyNavigation, indent = "1", theme }) => ({
+}>(({ days, sticky = "0", indent = "1", theme }) => ({
   display: "grid",
   gridTemplateColumns:
     +indent > 0 ? `minmax(68px, auto) repeat(${days}, 1fr)` : `repeat(${days}, 1fr)`,
   overflowX: "auto",
   overflowY: "hidden",
   position: sticky === "1" ? "sticky" : "relative",
-  top: sticky === "1" ? (stickyNavigation ? 36 : 0) : undefined,
+  // Offset below the sticky navigation bar
+  top: sticky === "1" ? 40.5 : undefined,
   zIndex: sticky === "1" ? 99 : undefined,
   [theme.breakpoints.down("sm")]: {
     gridTemplateColumns: +indent > 0 ? `30px repeat(${days}, 1fr)` : "",

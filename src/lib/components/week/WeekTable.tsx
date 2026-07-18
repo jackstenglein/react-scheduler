@@ -41,7 +41,6 @@ const WeekTable = ({
     resourceFields,
     locale,
     hourFormat,
-    stickyNavigation,
     translations,
     timeZone,
     direction,
@@ -55,7 +54,6 @@ const WeekTable = ({
       resourceFields: s.resourceFields,
       locale: s.locale,
       hourFormat: s.hourFormat,
-      stickyNavigation: s.stickyNavigation,
       translations: s.translations,
       timeZone: s.timeZone,
       direction: s.direction,
@@ -101,12 +99,7 @@ const WeekTable = ({
   return (
     <>
       {/* Header days */}
-      <TableGrid
-        days={daysList.length}
-        ref={headersRef}
-        sticky="1"
-        stickyNavigation={stickyNavigation}
-      >
+      <TableGrid days={daysList.length} ref={headersRef} sticky="1">
         <Box></Box>
         {daysList.map((date, i) => (
           <DateButton
