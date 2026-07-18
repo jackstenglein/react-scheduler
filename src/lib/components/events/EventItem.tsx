@@ -208,11 +208,8 @@ function EventPaper(
                 : undefined,
         ...(event.sx || {}),
         ...(props.sx || {}),
-        ...(selected
-          ? {
-              zIndex: (theme.vars || theme).zIndex.modal - 2,
-            }
-          : {}),
+        // Above overlapping events, but below sticky headers (z-index 99)
+        ...(selected ? { zIndex: 90 } : {}),
       }}
       {...dragProps}
       draggable={canDrag}

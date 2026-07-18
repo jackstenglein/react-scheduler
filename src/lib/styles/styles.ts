@@ -105,7 +105,7 @@ export const TableGrid = styled("div")<{
   position: sticky === "1" ? "sticky" : "relative",
   // Offset below the sticky navigation bar
   top: sticky === "1" ? 40.5 : undefined,
-  zIndex: sticky === "1" ? theme.zIndex.modal - 1 : undefined,
+  zIndex: sticky === "1" ? 99 : undefined,
   [theme.breakpoints.down("sm")]: {
     gridTemplateColumns:
       +indent > 0
