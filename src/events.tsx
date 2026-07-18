@@ -1,4 +1,4 @@
-import { datetime, RRule } from "rrule";
+import { datetime, RRule, RRuleSet } from "rrule";
 import { ProcessedEvent } from "./lib/types";
 
 export const EVENTS: ProcessedEvent[] = [
@@ -147,6 +147,36 @@ export const EVENTS: ProcessedEvent[] = [
     }),
     color: "#dc4552",
   },
+  (() => {
+    const set = new RRuleSet();
+    const start = convertDateToRRuleDate(new Date(new Date(new Date().setHours(16)).setMinutes(0)));
+    set.rrule(
+      new RRule({
+        freq: RRule.DAILY,
+        count: 5,
+        dtstart: start,
+      })
+    );
+    // Skip tomorrow's occurrence
+    set.exdate(
+      convertDateToRRuleDate(
+        new Date(
+          new Date(new Date(new Date().setHours(16)).setMinutes(0)).setDate(
+            new Date().getDate() + 1
+          )
+        )
+      )
+    );
+    return {
+      event_id: 11,
+      title: "Event 11",
+      subtitle: "RRuleSet daily ×5 with tomorrow excluded (EXDATE)",
+      start: new Date(new Date(new Date().setHours(16)).setMinutes(0)),
+      end: new Date(new Date(new Date().setHours(16)).setMinutes(30)),
+      recurring: set,
+      color: "#0d7377",
+    };
+  })(),
 ];
 
 export const RESOURCES = [

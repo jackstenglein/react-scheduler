@@ -5,7 +5,7 @@ import { DragEvent } from "react";
 import { SelectOption } from "./components/inputs/SelectInput";
 import { Store } from "./store/types";
 import { StateItem } from "./views/Editor";
-import type { RRule } from "rrule";
+import type { RRule, RRuleSet } from "rrule";
 
 export type View = "month" | "week" | "day" | "agenda";
 
@@ -68,13 +68,17 @@ export interface CellRenderedProps {
   onDragLeave(e: DragEvent<HTMLButtonElement>): void;
   onDrop(e: DragEvent<HTMLButtonElement>): void;
 }
+
+/** Recurrence definition — a single `RRule` or an `RRuleSet` (multiple rules, RDATEs, EXDATEs). */
+export type EventRecurrence = RRule | RRuleSet;
+
 interface CalendarEvent {
   event_id: number | string;
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   start: Date;
   end: Date;
-  recurring?: RRule;
+  recurring?: EventRecurrence;
   disabled?: boolean;
   color?: string;
   textColor?: string;

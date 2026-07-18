@@ -11,7 +11,7 @@
 npm i @jackstenglein/react-scheduler
 ```
 
-If you plan to use `recurring` events in your scheduler, install `rrule` [package](https://www.npmjs.com/package/rrule)
+If you plan to use `recurring` events in your scheduler, install the [`rrule`](https://www.npmjs.com/package/rrule) package. Pass either an `RRule` or an `RRuleSet` (for multiple rules, `RDATE`s, and `EXDATE`s) on `event.recurring`.
 
 ## Usage
 
@@ -57,7 +57,7 @@ All props are _optional_
 | navigation | boolean. Show/Hide top bar date navigation. <br>_Default_: `true`
 | navigationPickerProps | CalendarPickerProps for top bar date navigation. Ref [CalendarPicker API](https://mui.com/x/api/date-pickers/calendar-picker/#main-content)
 | disableViewNavigator | boolean. Show/Hide top bar date View navigator. <br>_Default_: `false`
-| events | Array of ProcessedEvent. <br>_Default_: [] <br> <pre>type ProcessedEvent = {<br>event*id: number or string;<br>title: string;<br>subtitle?: string;<br>start: Date;<br>end: Date;<br>disabled?: boolean;<br>recurring: RRule;<br>color?: string or "palette.path";<br>textColor?: string or "palette.path";<br>editable?: boolean;<br>deletable?: boolean;<br>draggable?: boolean;<br>allDay?: boolean;<br>agendaAvatar?: React.ReactElement \| string<br>sx?: Mui sx prop<br>} </pre>
+| events | Array of ProcessedEvent. <br>_Default_: [] <br> <pre>type ProcessedEvent = {<br>event*id: number or string;<br>title: string;<br>subtitle?: string;<br>start: Date;<br>end: Date;<br>disabled?: boolean;<br>recurring?: RRule \| RRuleSet;<br>color?: string or "palette.path";<br>textColor?: string or "palette.path";<br>editable?: boolean;<br>deletable?: boolean;<br>draggable?: boolean;<br>allDay?: boolean;<br>agendaAvatar?: React.ReactElement \| string<br>sx?: Mui sx prop<br>} </pre>
 | slots | Object. MUI-style slot components for replaceable UI regions. Keys: `event`, `eventViewer`, `eventViewerTitle`, `eventViewerSubtitle`, `eventViewerExtra`, `loadingOverlay`, `cell`, `dayHeader`, `hourLabel`, `editor`, `resourceHeader`. Each value is a React component that receives the slot’s owner state as props.
 | slotProps | Object. Props (or `(ownerState) => props` callbacks) passed into each slot. Merged on top of the owner state.
 | editable | boolean. If `true`, the scheduler cell click will not open the editor, and the event item will not show the edit button, this is applied to all events, and can be overridden in each event property, see `ProcessedEvent` type.

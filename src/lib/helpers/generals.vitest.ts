@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RRule } from "rrule";
+import { RRule, RRuleSet } from "rrule";
 import {
   arraytizeFieldVal,
   calcCellHeight,
@@ -309,6 +309,97 @@ describe("filterTodayEvents", () => {
     expect(result).toHaveLength(1);
     expect(result[0].event_id).toBe(1);
     expect(result[0].start.getDate()).toBe(15);
+  });
+
+  it("expands RRuleSet events and honors EXDATE", () => {
+    const set = new RRuleSet();
+    set.rrule(
+      new RRule({
+        freq: RRule.DAILY,
+        dtstart: new Date(2025, 0, 13, 9, 0),
+      })
+    );
+    set.exdate(new Date(2025, 0, 15, 9, 0));
+
+    const withExdate = filterTodayEvents(
+      [
+        makeEvent({
+          event_id: 1,
+          start: new Date(2025, 0, 13, 9, 0),
+          end: new Date(2025, 0, 13, 10, 0),
+          recurring: set,
+        }),
+      ],
+      today
+    );
+    expect(withExdate).toHaveLength(0);
+
+    const setWithoutExdate = new RRuleSet();
+    setWithoutExdate.rrule(
+      new RRule({
+        freq: RRule.DAILY,
+        dtstart: new Date(2025, 0, 13, 9, 0),
+      })
+    );
+    const withoutExdate = filterTodayEvents(
+      [
+        makeEvent({
+          event_id: 2,
+          start: new Date(2025, 0, 13, 9, 0),
+          end: new Date(2025, 0, 13, 10, 0),
+          recurring: setWithoutExdate,
+        }),
+      ],
+      today
+    );
+    expect(withoutExdate).toHaveLength(1);
+    expect(withoutExdate[0].start.getDate()).toBe(15);
+  });
+
+  it("expands RRuleSet with multiple rrules", () => {
+    const set = new RRuleSet();
+    set.rrule(
+      new RRule({
+        freq: RRule.WEEKLY,
+        byweekday: [RRule.MO],
+        dtstart: new Date(2025, 0, 6, 9, 0), // Monday
+      })
+    );
+    set.rrule(
+      new RRule({
+        freq: RRule.WEEKLY,
+        byweekday: [RRule.WE],
+        dtstart: new Date(2025, 0, 8, 9, 0), // Wednesday
+      })
+    );
+
+    // Wednesday Jan 15, 2025
+    const wed = filterTodayEvents(
+      [
+        makeEvent({
+          event_id: 1,
+          start: new Date(2025, 0, 6, 9, 0),
+          end: new Date(2025, 0, 6, 10, 0),
+          recurring: set,
+        }),
+      ],
+      today
+    );
+    expect(wed).toHaveLength(1);
+
+    // Tuesday Jan 14 — neither MO nor WE
+    const tue = filterTodayEvents(
+      [
+        makeEvent({
+          event_id: 1,
+          start: new Date(2025, 0, 6, 9, 0),
+          end: new Date(2025, 0, 6, 10, 0),
+          recurring: set,
+        }),
+      ],
+      new Date(2025, 0, 14, 12, 0)
+    );
+    expect(tue).toHaveLength(0);
   });
 });
 
