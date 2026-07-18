@@ -3,11 +3,12 @@ import { Button, MenuItem, Menu } from "@mui/material";
 import { WeekDateBtn } from "./WeekDateBtn";
 import { DayDateBtn } from "./DayDateBtn";
 import { MonthDateBtn } from "./MonthDateBtn";
-import useStore from "../../hooks/useStore";
+import useStore, { shallowEqual } from "../../hooks/useStore";
 import { NavigationDiv } from "../../styles/styles";
 import { getTimeZonedDate } from "../../helpers/generals";
 import { ExpandMore } from "@mui/icons-material";
 import { View } from "../../types";
+import { renderSlot } from "../../slots/resolveSlot";
 
 export type { View };
 
@@ -28,7 +29,30 @@ const Navigation = () => {
     timeZone,
     agenda,
     toggleAgenda,
-  } = useStore();
+    slots,
+    slotProps,
+  } = useStore(
+    (s) => ({
+      selectedDate: s.selectedDate,
+      view: s.view,
+      week: s.week,
+      handleState: s.handleState,
+      getViews: s.getViews,
+      translations: s.translations,
+      navigation: s.navigation,
+      day: s.day,
+      month: s.month,
+      disableViewNavigator: s.disableViewNavigator,
+      onSelectedDateChange: s.onSelectedDateChange,
+      onViewChange: s.onViewChange,
+      timeZone: s.timeZone,
+      agenda: s.agenda,
+      toggleAgenda: s.toggleAgenda,
+      slots: s.slots,
+      slotProps: s.slotProps,
+    }),
+    shallowEqual
+  );
   const [viewMenuAnchor, setViewMenuAnchor] = useState<Element | null>();
   const views = getViews();
 
@@ -139,6 +163,13 @@ const Navigation = () => {
             </Menu>
           </>
         )}
+
+        {renderSlot({
+          slot: slots?.navigationExtra,
+          slotProps: slotProps?.navigationExtra,
+          ownerState: { view },
+          defaultElement: null,
+        })}
       </div>
     </NavigationDiv>
   );

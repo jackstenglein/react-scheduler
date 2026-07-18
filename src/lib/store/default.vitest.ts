@@ -11,6 +11,7 @@ describe("defaultProps", () => {
     expect(props.editable).toBe(true);
     expect(props.deletable).toBe(true);
     expect(props.draggable).toBe(true);
+    expect(props.hideDates).toBe(false);
   });
 
   it("merges custom view settings with defaults", () => {

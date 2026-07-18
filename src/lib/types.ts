@@ -255,6 +255,14 @@ export type ResourceHeaderSlotProps = {
   resource: DefaultResource;
 };
 
+export type NavigationExtraSlotProps = {
+  view: View;
+};
+
+export type EventViewerActionsExtraSlotProps = {
+  event: ProcessedEvent;
+};
+
 export interface SchedulerHelpers {
   state: Record<string, StateItem>;
   close(): void;
@@ -279,6 +287,8 @@ export interface SchedulerSlots {
   hourLabel?: React.ComponentType<HourLabelSlotProps>;
   editor?: React.ComponentType<EditorSlotProps>;
   resourceHeader?: React.ComponentType<ResourceHeaderSlotProps>;
+  navigationExtra?: React.ComponentType<NavigationExtraSlotProps>;
+  eventViewerActionsExtra?: React.ComponentType<EventViewerActionsExtraSlotProps>;
 }
 
 export interface SchedulerSlotProps {
@@ -293,6 +303,8 @@ export interface SchedulerSlotProps {
   hourLabel?: SlotPropsOf<HourLabelSlotProps>;
   editor?: SlotPropsOf<EditorSlotProps>;
   resourceHeader?: SlotPropsOf<ResourceHeaderSlotProps>;
+  navigationExtra?: SlotPropsOf<NavigationExtraSlotProps>;
+  eventViewerActionsExtra?: SlotPropsOf<EventViewerActionsExtraSlotProps>;
 }
 export interface SchedulerProps {
   /**Min height of table
@@ -345,6 +357,11 @@ export interface SchedulerProps {
   onDelete?(deletedId: string | number): Promise<string | number | void>;
   /** if true, the viewer popover will be disabled globally */
   disableViewer?: boolean;
+  /**
+   * Whether event items hide their start/end time.
+   * @default false
+   */
+  hideDates?: boolean;
   /**Resources array to split event views with resources */
   resources: DefaultResource[];
   /**Map resources fields */

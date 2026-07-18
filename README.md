@@ -58,7 +58,7 @@ All props are _optional_
 | navigationPickerProps | CalendarPickerProps for top bar date navigation. Ref [CalendarPicker API](https://mui.com/x/api/date-pickers/calendar-picker/#main-content)
 | disableViewNavigator | boolean. Show/Hide top bar date View navigator. <br>_Default_: `false`
 | events | Array of ProcessedEvent. <br>_Default_: [] <br> <pre>type ProcessedEvent = {<br>event*id: number or string;<br>title: string;<br>subtitle?: string;<br>start: Date;<br>end: Date;<br>disabled?: boolean;<br>recurring?: RRule \| RRuleSet;<br>color?: string or "palette.path";<br>textColor?: string or "palette.path";<br>editable?: boolean;<br>deletable?: boolean;<br>draggable?: boolean;<br>allDay?: boolean;<br>agendaAvatar?: React.ReactElement \| string<br>sx?: Mui sx prop<br>} </pre>
-| slots | Object. MUI-style slot components for replaceable UI regions. Keys: `event`, `eventViewer`, `eventViewerTitle`, `eventViewerSubtitle`, `eventViewerExtra`, `loadingOverlay`, `cell`, `dayHeader`, `hourLabel`, `editor`, `resourceHeader`. Each value is a React component that receives the slot’s owner state as props.
+| slots | Object. MUI-style slot components for replaceable UI regions. Keys: `event`, `eventViewer`, `eventViewerTitle`, `eventViewerSubtitle`, `eventViewerExtra`, `eventViewerActionsExtra`, `loadingOverlay`, `cell`, `dayHeader`, `hourLabel`, `editor`, `resourceHeader`, `navigationExtra`. Each value is a React component that receives the slot’s owner state as props.
 | slotProps | Object. Props (or `(ownerState) => props` callbacks) passed into each slot. Merged on top of the owner state.
 | editable | boolean. If `true`, the scheduler cell click will not open the editor, and the event item will not show the edit button, this is applied to all events, and can be overridden in each event property, see `ProcessedEvent` type.
 | deletable | boolean. Whether the event item will show the delete button, this is applied to all events, and can be overridden in each event property, see `ProcessedEvent` type.
@@ -66,12 +66,13 @@ All props are _optional_
 | getRemoteEvents | Function(RemoteQuery). Return promise of array of events. Can be used as a callback to fetch events by parent component or fetch.<br><pre>type RemoteQuery = { <br> start: Date;<br> end: Date;<br> view: "day" \| "week" \| "month";<br>}</pre>
 | fields | Array of extra fields with configurations. <br> Example: <pre> { <br> name: "description", <br> type: "input" , <br> config: { label: "Description", required: true, min: 3, email: true, variant: "outlined", ....<br>}</pre>
 | loading | boolean. Loading state of the calendar table
-| onConfirm | Function(event, action). Return promise with the new added/edited event use with remote data. <br> _action_: `add` | `edit`
+| onConfirm | Function(event, action). Return promise with the new added/edited event use with remote data. <br> *action*: `add` | `edit`
 | onDelete | Function(id) Return promise with the deleted event id to use with remote data.
 | disableViewer | boolean. If true, the viewer popover will be disabled globally
-| resources | Array. Resources array to split event views with resources <br>_Example_ <pre>{<br>assignee: 1,<br>text: "User One", <br>subtext: "Sales Manager", <br>avatar: "https://picsum.photos/200/300", <br>color: "#ab2d2d",<br> }</pre>
-| resourceFields | Object. Map the resources correct fields. <br>_Example_:<pre>{<br>idField: "admin*id", <br>textField: "title", <br>subTextField: "mobile",<br>avatarField: "title", <br>colorField: "background",<br>}</pre>
-| resourceViewMode | Display resources mode. <br>\_Options*: `default` | `vertical` | `tabs`
+| hideDates | boolean. Whether event items hide their start/end time. <br>*Default*: `false`
+| resources | Array. Resources array to split event views with resources <br>*Example* <pre>{<br>assignee: 1,<br>text: "User One", <br>subtext: "Sales Manager", <br>avatar: "https://picsum.photos/200/300", <br>color: "#ab2d2d",<br> }</pre>
+| resourceFields | Object. Map the resources correct fields. <br>*Example*:<pre>{<br>idField: "admin*id", <br>textField: "title", <br>subTextField: "mobile",<br>avatarField: "title", <br>colorField: "background",<br>}</pre>
+| resourceViewMode | Display resources mode. <br>\_Options\*: `default` | `vertical` | `tabs`
 | onResourceChange | Function(resource: Resource): void. Triggered when the resource tabs changes, only applicable when `resourceViewMode="tabs"`
 | direction | string. Table direction. `rtl` | `ltr`
 | dialogMaxWidth | Edito dialog maxWith. Ex: `lg` | `md` | `sm`... _Default_:`md`

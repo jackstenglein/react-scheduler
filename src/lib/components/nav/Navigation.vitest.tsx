@@ -52,4 +52,25 @@ describe("Navigation", () => {
     });
     expect(container).toBeEmptyDOMElement();
   });
+
+  it("renders the navigationExtra slot after the view dropdown", () => {
+    renderWithProviders(<Navigation />, {
+      initial: {
+        view: "week",
+        month: {},
+        week: {},
+        day: {},
+        slots: {
+          navigationExtra: ({ view }: { view: string }) => (
+            <button type="button">Extra for {view}</button>
+          ),
+        },
+      },
+    });
+
+    const viewNavigator = screen.getByTestId("view-navigator");
+    const extra = screen.getByRole("button", { name: "Extra for week" });
+    expect(viewNavigator).toContainElement(extra);
+    expect(viewNavigator.lastElementChild).toBe(extra);
+  });
 });

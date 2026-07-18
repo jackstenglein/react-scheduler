@@ -121,7 +121,6 @@ const MonthEvents = ({
           <EventItem
             variant="text"
             event={event}
-            showDate={false}
             multiday={differenceInDaysOmitTime(event.start, event.end) > 0}
             hasPrev={fromPrevWeek}
             hasNext={toNextWeek}

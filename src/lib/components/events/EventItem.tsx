@@ -15,7 +15,7 @@ interface EventItemProps {
   multiday?: boolean;
   hasPrev?: boolean;
   hasNext?: boolean;
-  showDate?: boolean;
+  hideDates?: boolean;
   variant?: "paper" | "text";
   sx?: SxProps;
 }
@@ -23,10 +23,11 @@ interface EventItemProps {
 const EventItem = (props: EventItemProps) => {
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const { slots, slotProps } = useStore(
+  const { slots, slotProps, hideDates } = useStore(
     (s) => ({
       slots: s.slots,
       slotProps: s.slotProps,
+      hideDates: s.hideDates,
     }),
     shallowEqual
   );
@@ -79,9 +80,14 @@ const EventItem = (props: EventItemProps) => {
   return (
     <Fragment>
       {props.variant === "text" && !props.multiday ? (
-        <EventText {...props} triggerViewer={triggerViewer} />
+        <EventText {...props} triggerViewer={triggerViewer} hideDates={hideDates} />
       ) : (
-        <EventPaper {...props} triggerViewer={triggerViewer} selected={Boolean(anchorEl)} />
+        <EventPaper
+          {...props}
+          triggerViewer={triggerViewer}
+          selected={Boolean(anchorEl)}
+          hideDates={hideDates}
+        />
       )}
 
       {/* Viewer */}
@@ -153,7 +159,7 @@ function EventText(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Ele
         }}
       />
 
-      {props.showDate !== false && (
+      {!props.hideDates && (
         <Typography fontSize="0.75rem" color="textSecondary" sx={{ textWrap: "nowrap" }}>
           {format(event.start, hFormat, { locale })}
         </Typography>
@@ -236,7 +242,7 @@ function EventPaper(
   );
 }
 
-function EventDetails({ event, multiday, showDate = true, hasPrev, hasNext }: EventItemProps) {
+function EventDetails({ event, multiday, hideDates, hasPrev, hasNext }: EventItemProps) {
   const { locale, hourFormat } = useStore(
     (s) => ({
       locale: s.locale,
@@ -245,7 +251,7 @@ function EventDetails({ event, multiday, showDate = true, hasPrev, hasNext }: Ev
     shallowEqual
   );
   const hFormat = getHourFormat(hourFormat);
-  const hideDates = differenceInDaysOmitTime(event.start, event.end) <= 0 && event.allDay;
+  const allDayEvent = differenceInDaysOmitTime(event.start, event.end) <= 0 && event.allDay;
 
   if (multiday) {
     return (
@@ -259,13 +265,13 @@ function EventDetails({ event, multiday, showDate = true, hasPrev, hasNext }: Ev
         }}
       >
         <Typography sx={{ fontSize: 11 }} noWrap>
-          {!hasPrev && showDate && !hideDates && format(event.start, hFormat, { locale })}
+          {!hasPrev && !allDayEvent && !hideDates && format(event.start, hFormat, { locale })}
         </Typography>
         <Typography variant="subtitle2" align="center" sx={{ fontSize: 12 }} noWrap>
           {event.title}
         </Typography>
         <Typography sx={{ fontSize: 11 }} noWrap>
-          {!hasNext && showDate && !hideDates && format(event.end, hFormat, { locale })}
+          {!hasNext && !allDayEvent && !hideDates && format(event.end, hFormat, { locale })}
         </Typography>
       </div>
     );
@@ -281,7 +287,7 @@ function EventDetails({ event, multiday, showDate = true, hasPrev, hasNext }: Ev
           {event.subtitle}
         </Typography>
       )}
-      {showDate && (
+      {!hideDates && (
         <Typography style={{ fontSize: 11 }} noWrap>
           {`${format(event.start, hFormat, {
             locale,

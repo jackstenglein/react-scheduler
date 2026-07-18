@@ -3,8 +3,9 @@ import EditRounded from "@mui/icons-material/EditRounded";
 import { Box, Button, Grow, IconButton, Slide } from "@mui/material";
 import { useState } from "react";
 import { ProcessedEvent } from "../../types";
-import useStore from "../../hooks/useStore";
+import useStore, { shallowEqual } from "../../hooks/useStore";
 import useEventPermissions from "../../hooks/useEventPermissions";
+import { renderSlot } from "../../slots/resolveSlot";
 
 interface Props {
   event: ProcessedEvent;
@@ -13,7 +14,15 @@ interface Props {
 }
 
 const EventActions = ({ event, onDelete, onEdit }: Props) => {
-  const { translations, direction } = useStore();
+  const { translations, direction, slots, slotProps } = useStore(
+    (s) => ({
+      translations: s.translations,
+      direction: s.direction,
+      slots: s.slots,
+      slotProps: s.slotProps,
+    }),
+    shallowEqual
+  );
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const handleDelete = () => {
@@ -39,6 +48,12 @@ const EventActions = ({ event, onDelete, onEdit }: Props) => {
               <DeleteRounded />
             </IconButton>
           )}
+          {renderSlot({
+            slot: slots?.eventViewerActionsExtra,
+            slotProps: slotProps?.eventViewerActionsExtra,
+            ownerState: { event },
+            defaultElement: null,
+          })}
         </div>
       </Grow>
       <Slide

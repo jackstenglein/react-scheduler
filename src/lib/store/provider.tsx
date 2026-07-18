@@ -47,6 +47,7 @@ const CONTROLLED_KEYS = [
   "disableViewNavigator",
   "dialogMaxWidth",
   "disableViewer",
+  "hideDates",
   "navigationPickerProps",
   "slots",
   "slotProps",
