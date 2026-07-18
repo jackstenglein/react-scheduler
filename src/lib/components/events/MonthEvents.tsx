@@ -109,8 +109,9 @@ const MonthEvents = ({
             position: "absolute",
             zIndex: "1",
             top: `calc(${MULTI_DAY_EVENT_HEIGHT}px * ${position} + ${MONTH_NUMBER_HEIGHT}px + ${theme.spacing(position * 0.25)})`,
-            width: `${100 * eventLength}%`,
+            width: `calc(${100 * eventLength}% + ${eventLength - 1}px)`,
             height: `${MULTI_DAY_EVENT_HEIGHT}px`,
+            paddingRight: theme.spacing(0.25),
           }}
         >
           <EventItem

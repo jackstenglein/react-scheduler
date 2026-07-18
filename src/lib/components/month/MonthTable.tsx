@@ -1,4 +1,4 @@
-import { Button, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import { addDays, format, isSameDay, isSameMonth, setHours, startOfMonth } from "date-fns";
 import { Fragment, useMemo } from "react";
 import { getHourFormat, isTimeZonedToday } from "../../helpers/generals";
@@ -74,8 +74,9 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
     const result: React.ReactNode[] = [];
     const field = resourceFields.idField;
 
-    for (const startDay of eachWeekStart) {
-      const cells = weekDays.map((d) => {
+    for (let weekIndex = 0; weekIndex < eachWeekStart.length; weekIndex++) {
+      const startDay = eachWeekStart[weekIndex];
+      const cells = weekDays.map((d, i) => {
         const today = addDays(startDay, d);
         const start = new Date(`${format(setHours(today, startHour), `yyyy/MM/dd ${hFormat}`)}`);
         const end = new Date(`${format(setHours(today, endHour), `yyyy/MM/dd ${hFormat}`)}`);
@@ -85,7 +86,18 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
         const isToday = isTimeZonedToday({ dateLeft: today, timeZone });
 
         return (
-          <span style={{ height: CELL_HEIGHT }} key={d.toString()} className="rs__cell">
+          <Box
+            key={d.toString()}
+            component="span"
+            sx={{
+              height: CELL_HEIGHT,
+              borderRight: i === weekDays.length - 1 ? 0 : "1px solid",
+              borderBottom: weekIndex === eachWeekStart.length - 1 ? 0 : "1px solid",
+              borderColor: "divider",
+              background: (theme) => (theme.vars || theme).palette.background.paper,
+              position: "relative",
+            }}
+          >
             <Cell
               start={start}
               end={end}
@@ -154,7 +166,7 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
                 cellHeight={CELL_HEIGHT}
               />
             </Fragment>
-          </span>
+          </Box>
         );
       });
 
@@ -187,7 +199,7 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
   return (
     <>
       {/* Header Days */}
-      <TableGrid days={daysList.length} ref={headersRef} indent="0" sticky="1">
+      <TableGrid days={daysList.length} ref={headersRef} indent="0" sticky="1" overflowX="hidden">
         {daysList.map((date, i) => (
           <Typography
             key={i}
@@ -196,7 +208,7 @@ const MonthTable = ({ daysList, resource, eachWeekStart }: Props) => {
               borderStyle: "solid",
               borderColor: "divider",
               borderWidth: 0,
-              borderLeftWidth: i === 0 ? 0 : "1px",
+              borderRightWidth: i === daysList.length - 1 ? 0 : "1px",
             }}
             align="center"
             variant="body2"

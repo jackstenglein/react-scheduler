@@ -91,22 +91,29 @@ export const TableGrid = styled("div")<{
   days: number;
   sticky?: string;
   indent?: string;
-}>(({ days, sticky = "0", indent = "1", theme }) => ({
+  /** Use `hidden` on sticky headers so only the body shows a horizontal scrollbar. */
+  overflowX?: "auto" | "hidden";
+}>(({ days, sticky = "0", indent = "1", overflowX = "auto", theme }) => ({
   display: "grid",
+  boxSizing: "border-box",
   gridTemplateColumns:
-    +indent > 0 ? `minmax(68px, auto) repeat(${days}, 1fr)` : `repeat(${days}, 1fr)`,
-  overflowX: "auto",
+    +indent > 0 ? `68px repeat(${days}, minmax(65px, 1fr))` : `repeat(${days}, minmax(65px, 1fr))`,
+  overflowX,
   overflowY: "hidden",
+  // Best-effort; wheel/touch clamping in useSyncScroll is the reliable edge fix.
+  overscrollBehaviorX: "none",
   position: sticky === "1" ? "sticky" : "relative",
   // Offset below the sticky navigation bar
   top: sticky === "1" ? 40.5 : undefined,
   zIndex: sticky === "1" ? 99 : undefined,
   [theme.breakpoints.down("sm")]: {
-    gridTemplateColumns: +indent > 0 ? `30px repeat(${days}, 1fr)` : "",
+    gridTemplateColumns:
+      +indent > 0
+        ? `30px repeat(${days}, minmax(65px, 1fr))`
+        : `repeat(${days}, minmax(65px, 1fr))`,
   },
-  borderStyle: "solid",
-  borderColor: (theme.vars || theme).palette.grey[300],
-  borderWidth: "1px",
+  border: "1px solid",
+  borderColor: (theme.vars || theme).palette.divider,
   "&:first-of-type": {
     background: (theme.vars || theme).palette.background.paper,
     borderTopLeftRadius: theme.spacing(1),
@@ -114,7 +121,6 @@ export const TableGrid = styled("div")<{
   },
   "&:last-of-type": {
     borderTopWidth: "0",
-    borderRightWidth: "0",
     borderBottomLeftRadius: theme.spacing(1),
     borderBottomRightRadius: theme.spacing(1),
   },
@@ -124,24 +130,6 @@ export const TableGrid = styled("div")<{
     borderStyle: "solid",
     borderColor: (theme.vars || theme).palette.grey[300],
     borderWidth: "0 1px 1px 0",
-    "&.rs__last_row": {
-      borderBottomWidth: "0",
-    },
-    "&.rs__time": {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "sticky",
-      left: 0,
-      zIndex: 99,
-      [theme.breakpoints.down("sm")]: {
-        writingMode: "vertical-rl",
-      },
-    },
-    "& .rs__block_col": {
-      display: "block",
-      position: "relative",
-    },
     "& .rs__hover__op": {
       cursor: "pointer",
       "&:hover": {
@@ -149,14 +137,10 @@ export const TableGrid = styled("div")<{
         textDecoration: "underline",
       },
     },
-    "&:not(.rs__time)": {
-      minWidth: 65,
-    },
   },
 }));
 
 export const EventItemPaper = styled(Paper)<{ disabled?: boolean }>(({ disabled }) => ({
-  width: "99.5%",
   height: "100%",
   display: "block",
   cursor: disabled ? "not-allowed" : "pointer",
@@ -168,7 +152,6 @@ export const EventItemPaper = styled(Paper)<{ disabled?: boolean }>(({ disabled 
     textAlign: "left",
     "& > div": {
       height: "100%",
-      // padding: "2px 4px",
     },
   },
 }));

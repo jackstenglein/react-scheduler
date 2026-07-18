@@ -195,7 +195,7 @@ function EventPaper(props: EventItemProps & { triggerViewer: (el?: MouseEvent<El
           : theme.palette.getContrastText(
               event.color || (theme.vars || theme).palette.primary.contrastText
             ),
-        ml: 0.25,
+        mx: 0.25,
         clipPath:
           hasPrev && hasNext
             ? `polygon(8px 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0 50%)`

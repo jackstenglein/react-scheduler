@@ -12,7 +12,6 @@ import {
   startOfDay,
   subMinutes,
 } from "date-fns";
-import { View } from "../types";
 import {
   DefaultResource,
   FieldProps,
@@ -20,6 +19,7 @@ import {
   RecurrenceEvent,
   ResourceFields,
   SchedulerProps,
+  View,
 } from "../types";
 import { StateEvent } from "../views/Editor";
 import { SchedulerState } from "../store/types";

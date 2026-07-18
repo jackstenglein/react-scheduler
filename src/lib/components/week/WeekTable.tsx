@@ -5,7 +5,7 @@ import { getHourFormat } from "../../helpers/generals";
 import { MULTI_DAY_EVENT_HEIGHT } from "../../helpers/constants";
 import { DefaultResource, ProcessedEvent } from "../../types";
 import useSyncScroll from "../../hooks/useSyncScroll";
-import { addMinutes, endOfDay, format, isToday, startOfDay } from "date-fns";
+import { addMinutes, endOfDay, format, startOfDay } from "date-fns";
 import EventItem from "../events/EventItem";
 import { Box, Typography } from "@mui/material";
 import TodayEvents from "../events/TodayEvents";
@@ -99,7 +99,7 @@ const WeekTable = ({
   return (
     <>
       {/* Header days */}
-      <TableGrid days={daysList.length} ref={headersRef} sticky="1">
+      <TableGrid days={daysList.length} ref={headersRef} sticky="1" overflowX="hidden">
         <Box></Box>
         {daysList.map((date, i) => (
           <DateButton
@@ -137,7 +137,7 @@ const WeekTable = ({
             data-testid="week-allday-cell"
             sx={{
               borderTop: "1px solid",
-              borderLeft: i === 0 ? undefined : "1px solid",
+              borderRight: i === dayLayouts.length - 1 ? 0 : "1px solid",
               borderColor: "divider",
               position: "relative",
               minHeight: allDayRowHeight,
@@ -166,7 +166,7 @@ const WeekTable = ({
                   zIndex: 1,
                   top: slot * (MULTI_DAY_EVENT_HEIGHT + ALL_DAY_SLOT_GAP) + ALL_DAY_SLOT_GAP,
                   left: 0,
-                  width: `${100 * span}%`,
+                  width: `calc(${100 * span}% + ${span - 1}px)`,
                   height: MULTI_DAY_EVENT_HEIGHT,
                   overflow: "hidden",
                 }}
@@ -223,9 +223,18 @@ const WeekTable = ({
               const end = addMinutes(start, step);
               const field = resourceFields.idField;
               return (
-                <span
+                <Box
                   key={ii}
-                  className={`rs__cell ${isToday(date) ? "rs__today_cell" : ""} ${i === hours.length - 1 ? "rs__last_row" : ""}`}
+                  component="span"
+                  sx={{
+                    borderRight: "1px solid",
+                    borderRightWidth: ii === dayLayouts.length - 1 ? 0 : "1px",
+                    borderBottom: "1px solid",
+                    borderBottomWidth: i === hours.length - 1 ? 0 : "1px",
+                    borderColor: "divider",
+                    background: (theme) => (theme.vars || theme).palette.background.paper,
+                    position: "relative",
+                  }}
                 >
                   {i === 0 && (
                     <TodayEvents
@@ -248,7 +257,7 @@ const WeekTable = ({
                     resourceKey={field}
                     resourceVal={resource ? resource[field] : null}
                   />
-                </span>
+                </Box>
               );
             })}
           </Fragment>
