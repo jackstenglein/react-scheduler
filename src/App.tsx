@@ -9,7 +9,7 @@ function App() {
   const calendarRef = useRef<SchedulerRef>(null);
 
   return (
-    <Box mx={1}>
+    <Box sx={{ mx: 1 }}>
       <div>
         <Link to="/1">Go to page 1</Link>
       </div>

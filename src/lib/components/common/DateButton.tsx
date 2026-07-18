@@ -37,7 +37,6 @@ export function DateButton({ date, onClick, locale }: DateButtonProps) {
       </Typography>
       <Typography
         component="span"
-        color={isToday ? "primary.contrastText" : "textPrimary"}
         sx={{
           display: "flex",
           alignItems: "center",
@@ -46,6 +45,7 @@ export function DateButton({ date, onClick, locale }: DateButtonProps) {
           width: "46px",
           height: "46px",
           borderRadius: "50%",
+          color: isToday ? "primary.contrastText" : "text.primary",
           backgroundColor: isToday ? "primary.main" : undefined,
           "button:hover &": {
             backgroundColor: isToday

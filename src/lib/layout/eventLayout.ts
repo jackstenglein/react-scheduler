@@ -10,7 +10,6 @@ import {
   isWithinInterval,
   startOfDay,
 } from "date-fns";
-import { View } from "../types";
 import {
   convertEventTimeZone,
   differenceInDaysOmitTime,
@@ -23,7 +22,7 @@ import {
   sortEventsByTheLengthest,
   traversCrossingEvents,
 } from "../helpers/generals";
-import { DefaultResource, FieldProps, ProcessedEvent, ResourceFields } from "../types";
+import { DefaultResource, FieldProps, ProcessedEvent, ResourceFields, View } from "../types";
 
 /** day (yyyy-MM-dd) → eventId → vertical slot index */
 export type DaySlots = Record<string, Record<string, number>>;

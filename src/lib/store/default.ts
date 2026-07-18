@@ -133,7 +133,7 @@ export const defaultProps = (props: Partial<SchedulerProps>) => {
     draggable: true,
     hideDates: false,
     agenda,
-    enableAgenda: typeof agenda === "undefined" || agenda,
+    enableAgenda: agenda ?? true,
     ...otherProps,
   };
 };

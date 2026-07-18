@@ -160,14 +160,18 @@ function EventText(props: EventItemProps & { triggerViewer: (el?: MouseEvent<Ele
       />
 
       {!props.hideDates && (
-        <Typography fontSize="0.75rem" color="textSecondary" sx={{ textWrap: "nowrap" }}>
+        <Typography color="textSecondary" sx={{ textWrap: "nowrap", fontSize: "0.75rem" }}>
           {format(event.start, hFormat, { locale })}
         </Typography>
       )}
 
       <Typography
-        fontSize="0.75rem"
-        sx={{ textWrap: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
+        sx={{
+          textWrap: "nowrap",
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+          fontSize: "0.75rem",
+        }}
       >
         {event.title}
       </Typography>
