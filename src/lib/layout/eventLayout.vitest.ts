@@ -1,4 +1,5 @@
 import { addDays, startOfWeek } from "date-fns";
+import { datetime, RRule, RRuleSet } from "rrule";
 import { describe, expect, it } from "vitest";
 import {
   computeEventSlots,
@@ -8,6 +9,7 @@ import {
   layoutTimedEvents,
 } from "./eventLayout";
 import { ProcessedEvent } from "../types";
+import { getEventOccurrenceKey } from "../helpers/generals";
 
 const makeEvent = (overrides: Partial<ProcessedEvent> = {}): ProcessedEvent => ({
   event_id: 1,
@@ -75,6 +77,70 @@ describe("computeRenderedSlots", () => {
     expect(slots.alice?.["2025-01-15"]?.["alice-event"]).toBe(0);
     expect(slots.bob?.["2025-01-15"]?.["bob-event"]).toBe(0);
     expect(slots.alice?.["2025-01-15"]?.["bob-event"]).toBeUndefined();
+  });
+
+  it("stacks recurring occurrences below multi-day events and keeps free days at slot 0", () => {
+    // Mirrors demo Event 6 (multi-day all-day) + Event 11 (daily recurring with a gap)
+    const set = new RRuleSet();
+    set.rrule(
+      new RRule({
+        freq: RRule.DAILY,
+        count: 5,
+        dtstart: datetime(2025, 1, 18, 16, 0),
+      })
+    );
+    set.exdate(datetime(2025, 1, 19, 16, 0));
+
+    const multiDay = makeEvent({
+      event_id: 6,
+      title: "Event 6",
+      allDay: true,
+      start: new Date(2025, 0, 15, 20, 30),
+      end: new Date(2025, 0, 20, 23, 0),
+    });
+    const recurring = makeEvent({
+      event_id: 11,
+      title: "Event 11",
+      start: new Date(2025, 0, 18, 16, 0),
+      end: new Date(2025, 0, 18, 16, 30),
+      recurring: set,
+    });
+
+    const slots = computeRenderedSlots(
+      [multiDay, recurring],
+      [],
+      { idField: "assignee", textField: "text" },
+      [],
+      "month",
+      { start: new Date(2025, 0, 1), end: new Date(2025, 0, 31) }
+    );
+
+    const day = slots.all!;
+    // Multi-day keeps slot 0; recurring occurrence on the 20th must not collide
+    expect(day["2025-01-20"]?.["6"]).toBe(0);
+    const occ20Key = getEventOccurrenceKey({
+      ...recurring,
+      recurrenceId: new Date(2025, 0, 20, 16, 0).getTime(),
+      start: new Date(2025, 0, 20, 16, 0),
+      end: new Date(2025, 0, 20, 16, 30),
+    });
+    expect(day["2025-01-20"]?.[occ20Key]).toBe(1);
+
+    // After the multi-day ends, recurring occurrences sit at the top
+    const occ21Key = getEventOccurrenceKey({
+      ...recurring,
+      recurrenceId: new Date(2025, 0, 21, 16, 0).getTime(),
+      start: new Date(2025, 0, 21, 16, 0),
+      end: new Date(2025, 0, 21, 16, 30),
+    });
+    const occ22Key = getEventOccurrenceKey({
+      ...recurring,
+      recurrenceId: new Date(2025, 0, 22, 16, 0).getTime(),
+      start: new Date(2025, 0, 22, 16, 0),
+      end: new Date(2025, 0, 22, 16, 30),
+    });
+    expect(day["2025-01-21"]?.[occ21Key]).toBe(0);
+    expect(day["2025-01-22"]?.[occ22Key]).toBe(0);
   });
 });
 

@@ -64,7 +64,9 @@ export const EVENTS: ProcessedEvent[] = [
     start: new Date(
       new Date(new Date(new Date().setHours(20)).setMinutes(30)).setDate(new Date().getDate() - 3)
     ),
-    end: new Date(new Date(new Date().setHours(23)).setMinutes(0)),
+    end: new Date(
+      new Date(new Date(new Date().setHours(23)).setMinutes(0)).setDate(new Date().getDate() + 2)
+    ),
     admin_id: 2,
     allDay: true,
     color: "#9c27b0",

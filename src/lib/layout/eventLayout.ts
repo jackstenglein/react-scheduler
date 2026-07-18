@@ -14,6 +14,7 @@ import { View } from "../types";
 import {
   convertEventTimeZone,
   differenceInDaysOmitTime,
+  expandRecurringEvents,
   filterTodayEvents,
   getEventOccurrenceKey,
   getRecurrencesForDate,
@@ -69,12 +70,14 @@ export type TimedLayoutOptions = {
 
 /**
  * Assigns non-colliding vertical slots for multi-day / stacked events.
+ * Keys are occurrence-aware (`event_id` or `event_id:recurrenceId`).
  */
 export function computeEventSlots(events: ProcessedEvent[]): DaySlots {
   const slots: DaySlots = {};
   for (let i = 0; i < events.length; i++) {
     let position = 0;
     const event = events[i];
+    const key = getEventOccurrenceKey(event);
     const eventLength = eachDayOfInterval({ start: event.start, end: event.end });
     for (let d = 0; d < eventLength.length; d++) {
       const day = format(eventLength[d], "yyyy-MM-dd");
@@ -83,24 +86,33 @@ export function computeEventSlots(events: ProcessedEvent[]): DaySlots {
         while (positions.includes(position)) {
           position += 1;
         }
-        slots[day][event.event_id] = position;
+        slots[day][key] = position;
       } else {
-        slots[day] = { [event.event_id]: position };
+        slots[day] = { [key]: position };
       }
     }
   }
   return slots;
 }
 
+export type VisibleRange = { start: Date; end: Date };
+
 export function computeRenderedSlots(
   events: ProcessedEvent[],
   resources: DefaultResource[],
   resourceFields: ResourceFields,
   fields: FieldProps[],
-  view: View
+  view: View,
+  visibleRange?: VisibleRange
 ): RenderedSlots {
+  const withRecurrences =
+    view === "month" && visibleRange
+      ? expandRecurringEvents(events, visibleRange.start, visibleRange.end)
+      : events;
   const sorted =
-    view === "month" ? sortEventsByTheLengthest(events) : sortEventsByTheEarliest(events);
+    view === "month"
+      ? sortEventsByTheLengthest(withRecurrences)
+      : sortEventsByTheEarliest(withRecurrences);
   const slots: RenderedSlots = {};
 
   if (resources.length) {
@@ -225,7 +237,7 @@ export function getAllDayEventsByDay(
       span,
       hasPrev: isBefore(eventStart, weekStart),
       hasNext: isAfter(eventEnd, weekEnd),
-      slot: slots[dayKey]?.[event.event_id] ?? 0,
+      slot: slots[dayKey]?.[getEventOccurrenceKey(event)] ?? 0,
     });
   }
 

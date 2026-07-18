@@ -155,11 +155,12 @@ export const getRecurrencesForDate = (
   if (event.recurring) {
     return event.recurring
       ?.between(addDays(today, -1), addDays(today, 1), true)
-      .map((d: Date, index: number) => {
+      .map((d: Date) => {
         const start = convertRRuleDateToDate(d);
         return {
           ...event,
-          recurrenceId: index,
+          // Stable across query windows so slot keys match month positioning
+          recurrenceId: start.getTime(),
           start: start,
           end: addMilliseconds(start, duration),
         };
@@ -167,6 +168,32 @@ export const getRecurrencesForDate = (
       .map((event) => convertEventTimeZone(event, timeZone));
   }
   return [convertEventTimeZone(event, timeZone)];
+};
+
+/** Expands recurring events into concrete occurrences within `[rangeStart, rangeEnd]`. */
+export const expandRecurringEvents = (
+  events: ProcessedEvent[],
+  rangeStart: Date,
+  rangeEnd: Date
+): ProcessedEvent[] => {
+  const result: ProcessedEvent[] = [];
+  for (const event of events) {
+    if (!event.recurring) {
+      result.push(event);
+      continue;
+    }
+    const duration = differenceInMilliseconds(event.end, event.start);
+    for (const d of event.recurring.between(rangeStart, rangeEnd, true)) {
+      const start = convertRRuleDateToDate(d);
+      result.push({
+        ...event,
+        recurrenceId: start.getTime(),
+        start,
+        end: addMilliseconds(start, duration),
+      });
+    }
+  }
+  return result;
 };
 
 export const filterTodayEvents = (

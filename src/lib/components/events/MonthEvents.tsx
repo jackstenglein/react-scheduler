@@ -11,7 +11,11 @@ import { RecurrenceEvent } from "../../types";
 import { Typography, useTheme } from "@mui/material";
 import EventItem from "./EventItem";
 import { MONTH_NUMBER_HEIGHT, MULTI_DAY_EVENT_HEIGHT } from "../../helpers/constants";
-import { convertEventTimeZone, differenceInDaysOmitTime } from "../../helpers/generals";
+import {
+  convertEventTimeZone,
+  differenceInDaysOmitTime,
+  getEventOccurrenceKey,
+} from "../../helpers/generals";
 import useStore from "../../hooks/useStore";
 import usePosition from "../../positionManager/usePosition";
 
@@ -72,7 +76,7 @@ const MonthEvents = ({
 
       const day = format(today, "yyyy-MM-dd");
       const rendered = renderedSlots?.[resourceId || "all"]?.[day];
-      const position = (rendered?.[event.event_id] || 0) + (event.recurrenceId ?? 0);
+      const position = rendered?.[getEventOccurrenceKey(event)] ?? 0;
 
       if (position >= LIMIT) {
         elements.push(
