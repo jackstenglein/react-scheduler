@@ -65,7 +65,7 @@ describe("Week multi-day events", () => {
     const bar = screen.getByTestId("week-allday-event-multi");
     expect(bar).toBeInTheDocument();
     expect(bar).toHaveAttribute("data-span", "3");
-    expect(bar.style.width).toBe("300%");
+    expect(bar.style.width).toBe("calc(300% + 2px)");
     expect(screen.getByText("Conference")).toBeInTheDocument();
   });
 });

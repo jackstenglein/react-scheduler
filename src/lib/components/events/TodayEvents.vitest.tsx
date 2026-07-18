@@ -17,7 +17,7 @@ const makeEvent = (overrides: Partial<ProcessedEvent> = {}): ProcessedEvent => (
 /** Positioned wrapper around EventItem (absolute top/height/left/width). */
 function getEventWrapper(title: string): HTMLElement {
   const titleEl = screen.getByText(title);
-  const wrapper = titleEl.closest("div[style*='position']") as HTMLElement | null;
+  const wrapper = titleEl.closest("div[class*='MuiPaper-root']") as HTMLElement | null;
   if (!wrapper) {
     throw new Error(`Could not find positioned wrapper for event "${title}"`);
   }
@@ -40,9 +40,7 @@ describe("TodayEvents time and position", () => {
     );
 
     const wrapper = getEventWrapper("Morning");
-    expect(wrapper.style.top).toBe("0px");
-    expect(wrapper.style.height).toBe("60px");
-    expect(wrapper.style.width).toBe("98%");
+    expect(wrapper).toHaveStyle({ top: "0px", height: "60px", width: "calc(98% - 4px)" });
   });
 
   it("offsets top by minutes past startHour", () => {
@@ -62,8 +60,7 @@ describe("TodayEvents time and position", () => {
     );
 
     const wrapper = getEventWrapper("Late morning");
-    expect(wrapper.style.top).toBe("90px");
-    expect(wrapper.style.height).toBe("30px");
+    expect(wrapper).toHaveStyle({ top: "90px", height: "30px" });
   });
 
   it("scales top and height by minuteHeight", () => {
@@ -90,10 +87,11 @@ describe("TodayEvents time and position", () => {
       />
     );
 
-    expect(getEventWrapper("A").style.top).toBe("0px");
-    expect(getEventWrapper("A").style.height).toBe("120px");
-    expect(getEventWrapper("B").style.top).toBe("240px");
-    expect(getEventWrapper("B").style.height).toBe("120px");
+    const wrapperA = getEventWrapper("A");
+    const wrapperB = getEventWrapper("B");
+
+    expect(wrapperA).toHaveStyle({ top: "0px", height: "120px" });
+    expect(wrapperB).toHaveStyle({ top: "240px", height: "120px" });
   });
 
   it("clamps height to the visible day range", () => {
@@ -112,7 +110,8 @@ describe("TodayEvents time and position", () => {
       />
     );
 
-    expect(getEventWrapper("Long").style.height).toBe("480px");
+    const wrapper = getEventWrapper("Long");
+    expect(wrapper).toHaveStyle({ height: "480px" });
   });
 
   it("keeps non-overlapping events at full width with no left offset", () => {
@@ -136,10 +135,11 @@ describe("TodayEvents time and position", () => {
       />
     );
 
-    expect(getEventWrapper("First").style.width).toBe("98%");
-    expect(getEventWrapper("First").style.left).toBe("");
-    expect(getEventWrapper("Second").style.width).toBe("98%");
-    expect(getEventWrapper("Second").style.left).toBe("");
+    const wrapperFirst = getEventWrapper("First");
+    const wrapperSecond = getEventWrapper("Second");
+
+    expect(wrapperFirst).toHaveStyle({ width: "calc(98% - 4px)" });
+    expect(wrapperSecond).toHaveStyle({ width: "calc(98% - 4px)" });
   });
 
   it("narrows and offsets overlapping events horizontally", () => {
@@ -164,16 +164,13 @@ describe("TodayEvents time and position", () => {
     const first = getEventWrapper("Longer");
     const second = getEventWrapper("Overlap");
 
-    expect(first.style.width).toBe("98%");
-    expect(first.style.left).toBe("");
-    expect(first.style.top).toBe("0px");
-    expect(first.style.height).toBe("120px");
-
-    // alreadyRendered=[Longer] → width calc(100% - 51%) (jsdom may simplify to calc(49%))
-    expect(second.style.width).toMatch(/calc\((100% - 51%|49%)\)/);
-    expect(second.style.left).toBe("50%");
-    expect(second.style.top).toBe("60px");
-    expect(second.style.height).toBe("120px");
+    expect(first).toHaveStyle({ width: "calc(98% - 4px)", top: "0px", height: "120px" });
+    expect(second).toHaveStyle({
+      width: "calc(49% - 4px)",
+      left: "50%",
+      top: "60px",
+      height: "120px",
+    });
   });
 
   it("uses right instead of left when direction is rtl", () => {
@@ -194,8 +191,8 @@ describe("TodayEvents time and position", () => {
 
     renderWithProviders(<TodayEvents {...baseProps} direction="rtl" todayEvents={events} />);
 
-    expect(getEventWrapper("Second").style.right).toBe("50%");
-    expect(getEventWrapper("Second").style.left).toBe("");
+    const second = getEventWrapper("Second");
+    expect(second).toHaveStyle({ right: "50%" });
   });
 
   it("renders start and end times on each event", () => {

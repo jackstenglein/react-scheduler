@@ -69,8 +69,8 @@ describe("MonthEvents time and position", () => {
     renderMonthEvents([makeEvent({ event_id: "a", title: "All day A" })]);
 
     const wrapper = getEventWrapper("All day A");
-    // position 0 → 0*18 + 24 + 0 = 24px (jsdom may simplify the calc expression)
-    expect(wrapper.style.top).toMatch(/calc\(24px\)/);
+    // position 0 → 0*18 + 25 (MONTH_NUMBER_HEIGHT) + 0 = 25px (jsdom may simplify the calc expression)
+    expect(wrapper.style.top).toMatch(/calc\(25px\)/);
     expect(wrapper.style.height).toBe(`${MULTI_DAY_EVENT_HEIGHT}px`);
   });
 
@@ -90,7 +90,7 @@ describe("MonthEvents time and position", () => {
       }),
     ]);
 
-    // slot 1 → 18 + 24 + spacing(0.25)=2 → 44px
+    // slot 1 → 18 + 25 + spacing(0.25)=2 → 45px
     const expectedShortTop = MULTI_DAY_EVENT_HEIGHT + MONTH_NUMBER_HEIGHT + 2;
 
     await vi.waitFor(() => {
@@ -99,7 +99,7 @@ describe("MonthEvents time and position", () => {
       );
     });
 
-    expect(getEventWrapper("Long span").style.top).toMatch(/calc\(24px\)/);
+    expect(getEventWrapper("Long span").style.top).toMatch(/calc\(25px\)/);
     expect(getEventWrapper("Short span").style.top).toMatch(
       new RegExp(`calc\\(${expectedShortTop}px\\)`)
     );
@@ -116,7 +116,7 @@ describe("MonthEvents time and position", () => {
       }),
     ]);
 
-    expect(getEventWrapper("One day").style.width).toBe("100%");
+    expect(getEventWrapper("One day").style.width).toBe("calc(100% + 0px)");
   });
 
   it("widens multi-day events across multiple day cells", () => {
@@ -133,8 +133,7 @@ describe("MonthEvents time and position", () => {
     ]);
 
     const wrapper = getEventWrapper("Multi day");
-    // Jan 15 → Jan 17 inclusive via differenceInDaysOmitTime + 1
-    const widthPercent = Number.parseFloat(wrapper.style.width);
-    expect(widthPercent).toBeGreaterThan(100);
+    // Jan 15 → Jan 17 via differenceInDaysOmitTime + 1 → 2 day cells spanned
+    expect(wrapper.style.width).toBe("calc(200% + 1px)");
   });
 });
