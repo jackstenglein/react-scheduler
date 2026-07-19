@@ -17,7 +17,9 @@ const init = async () => {
     delete obj.scripts;
     delete obj.devDependencies;
     delete obj["lint-staged"];
-    obj.homepage = "https://github.com/aldabil21/react-scheduler#readme";
+    delete obj.eslintConfig;
+    delete obj.browserslist;
+    obj.homepage = "https://github.com/jackstenglein/react-scheduler#readme";
 
     await fs.promises.writeFile(
       path.join(base, "dist", "package.json"),
