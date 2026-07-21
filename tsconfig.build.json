@@ -1,14 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "include": ["src/lib/**/*"],
-  "exclude": [
-    "node_modules",
-    "**/__tests__/**",
-    "**/__benchmarks__/**",
-    "**/test-utils/**",
-    "**/*.vitest.ts",
-    "**/*.vitest.tsx",
-    "**/*.bench.ts",
-    "**/*.bench.tsx"
-  ]
+  "exclude": ["node_modules", "**/__tests__/**"]
 }
